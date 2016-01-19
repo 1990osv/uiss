@@ -1,8 +1,5 @@
-#include "MDR32F9Qx_config.h"
-#include "MDR32Fx.h"
-#include "MDR32F9Qx_port.h"
-#include "MDR32F9Qx_rst_clk.h"
-#include "MDR32F9Qx_timer.h"
+#include "global.h"
+#include "init.h"
 
 #define ALL_PORTS_CLK (RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | \
                        RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD | \
@@ -61,7 +58,7 @@ PORT_InitTypeDef PORT_InitStructure;
   PORT_InitStructure.PORT_OE    = PORT_OE_IN;
   PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
   PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-  PORT_InitStructure.PORT_SPEED = PORT_SPEED_SLOW;
+  PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
 
   PORT_Init(MDR_PORTB, &PORT_InitStructure);
 
@@ -81,7 +78,7 @@ PORT_InitTypeDef PORT_InitStructure;
 void Timer_Init(void){
   MDR_RST_CLK->PER_CLOCK |= 1 << 14; //разрешение тактирования Таймера 1
   MDR_RST_CLK->PER_CLOCK |= 1 << 15; //разрешение тактирования Таймера 2
-  MDR_RST_CLK->TIM_CLOCK = (
+	MDR_RST_CLK->TIM_CLOCK = (
   3 /*делитель тактовой частоты Таймера 1*/
   |(1 << 24) /*разешение тактирования Таймера 1*/
   |(0 << 8) /*делитель тактовой частоты Таймера 2*/
@@ -89,19 +86,15 @@ void Timer_Init(void){
   );
 
   MDR_TIMER1->PSG = 0x0;
-  MDR_TIMER1->ARR = 999; //9999 -> 10 ms  95 -> ==10 us
-
-  MDR_TIMER2->PSG = 0x0;
-  MDR_TIMER2->ARR = 600;
+  MDR_TIMER1->ARR = 999; //9999 -> 10 ms  999 -> ==100 us
 
   MDR_TIMER1->IE = (1 << 1); //разрешение прерывания по совпадению
   MDR_TIMER1->CNTRL = 1; /*счет вверх по TIM_CLK, таймер вкл.*/
 	NVIC_SetPriority(Timer1_IRQn,3);
 	NVIC_EnableIRQ(Timer1_IRQn);
 
-  MDR_TIMER2->IE = (1 << 1); //разрешение прерывания по совпадению
-  MDR_TIMER2->CNTRL = 1; /*счет вверх по TIM_CLK, таймер вкл.*/
-  NVIC_SetPriority(Timer2_IRQn,1);
+	NVIC_SetPriority(Timer2_IRQn,1);
   NVIC_EnableIRQ(Timer2_IRQn);
+
 
 }

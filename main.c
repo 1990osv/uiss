@@ -13,7 +13,7 @@ static PORT_InitTypeDef PortInit;
 static UART_InitTypeDef UART_InitStructure;
 
 uint8_t DataByte=0x01;
-static uint8_t ReciveByte[16];
+//static uint8_t ReciveByte[16];
 uint32_t i;
 
 void Uart1_Init(void){
@@ -49,7 +49,7 @@ void Uart1_Init(void){
   UART_InitStructure.UART_WordLength              = UART_WordLength8b;
   UART_InitStructure.UART_StopBits                = UART_StopBits1;
   UART_InitStructure.UART_Parity                  = UART_Parity_No;
-  UART_InitStructure.UART_FIFOMode                = UART_FIFO_ON;
+  UART_InitStructure.UART_FIFOMode                = UART_FIFO_OFF;
   UART_InitStructure.UART_HardwareFlowControl     = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
   /* Configure UART1 parameters */
   UART_Init (MDR_UART1,&UART_InitStructure);
@@ -120,7 +120,9 @@ int main(void){
 			/* Increment Data */
 			DataByte++;
 		}
-
+		if (UART_GetFlagStatus (MDR_UART1, UART_FLAG_RXFF) == SET)
+    /* Recive data */
+    DataByte = UART_ReceiveData (MDR_UART1);
 		
 	}
   

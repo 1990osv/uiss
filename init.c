@@ -98,3 +98,64 @@ void Timer_Init(void){
 
 
 }
+
+
+void Uart1_Init(void)
+{
+	static PORT_InitTypeDef PortInit;
+	static UART_InitTypeDef UART_InitStructure;
+
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTB,ENABLE);
+
+	/* Fill PortInit structure */
+	PortInit.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PortInit.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PortInit.PORT_PD_SHM = PORT_PD_SHM_OFF;
+	PortInit.PORT_PD = PORT_PD_DRIVER;
+	PortInit.PORT_GFEN = PORT_GFEN_OFF;
+	PortInit.PORT_FUNC = PORT_FUNC_ALTER;
+	PortInit.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PortInit.PORT_MODE = PORT_MODE_DIGITAL;
+
+	/* Configure PORTB pins 5 (UART1_TX) as output */
+	PortInit.PORT_OE = PORT_OE_OUT;
+	PortInit.PORT_Pin = PORT_Pin_5;
+	PORT_Init(MDR_PORTB, &PortInit);
+
+	/* Configure PORTB pins 6 (UART1_RX) as input */
+	PortInit.PORT_OE = PORT_OE_IN;
+	PortInit.PORT_Pin = PORT_Pin_6;
+	PORT_Init(MDR_PORTB, &PortInit);
+
+	/* Enables the CPU_CLK clock on UART1 */
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_UART1, ENABLE);
+
+	/* Set the HCLK division factor = 16 for UART1*/
+	UART_BRGInit(MDR_UART1, UART_HCLKdiv16);
+
+	NVIC_EnableIRQ(UART1_IRQn);
+
+	UART_InitStructure.UART_BaudRate                = 9600;
+	UART_InitStructure.UART_WordLength              = UART_WordLength8b;
+	UART_InitStructure.UART_StopBits                = UART_StopBits1;
+	UART_InitStructure.UART_Parity                  = UART_Parity_No;
+	UART_InitStructure.UART_FIFOMode                = UART_FIFO_OFF;
+	UART_InitStructure.UART_HardwareFlowControl     = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
+	/* Configure UART1 parameters */
+	UART_Init (MDR_UART1,&UART_InitStructure);
+
+	/* Configure DMA for UART1 */
+	UART_DMAConfig (MDR_UART1, UART_IT_FIFO_LVL_12words, UART_IT_FIFO_LVL_12words);
+	UART_DMACmd(MDR_UART1, UART_DMA_TXE | UART_DMA_RXE | UART_DMA_ONERR, ENABLE);
+
+
+	/* Enable transmitter interrupt (UARTTXINTR) */
+	UART_ITConfig (MDR_UART1, UART_IT_TX, ENABLE);
+
+	/* Enable Receiver interrupt */
+	UART_ITConfig (MDR_UART1, UART_IT_RX, ENABLE);
+
+	/* Enables UART1 peripheral */
+	UART_Cmd(MDR_UART1,ENABLE);
+
+}

@@ -4,7 +4,7 @@
 
 
 #define REG_GTIMER    0
-#define DT1_GTIMER    1
+#define MB_GTIMER     1
 
 #define MAX_GTIMERS  2
 

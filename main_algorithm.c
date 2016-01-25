@@ -11,7 +11,6 @@ void loopStart(void)
 	status = 1;	
 	
 	MDR_PORTC->RXTX &= ~(1<<0); // 0
-
   MDR_TIMER2->PSG = 0x0;
   MDR_TIMER2->ARR = 1; // просто чтобы в прерывание зашел
   

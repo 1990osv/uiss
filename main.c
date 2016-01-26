@@ -37,8 +37,8 @@ int main(void)
 	Uart1_Init();
 	RXn=0;
 	__disable_irq();
-	EEPROM_ErasePage(Address, EEPROM_Info_Bank_Select);
-	EEPROM_ProgramWord(Address, EEPROM_Info_Bank_Select, data32);
+	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);
+	EEPROM_ProgramWord(Address, EEPROM_Main_Bank_Select, data32);
 	__enable_irq();
 	while(1){
 //		if (GTimer_Get(REG_GTIMER)>=1000){ //10 == 1 ms

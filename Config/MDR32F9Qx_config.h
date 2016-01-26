@@ -88,7 +88,7 @@
 #define PLLCPUonTimeOut ((uint16_t)0x0600)
 #define PLLUSBonTimeOut ((uint16_t)0x0600)
 
-#define FLASH_PROG_FREQ_MHZ     (80.0)
+#define FLASH_PROG_FREQ_MHZ     (8.0)
 /* Use debug uart */
 #define _USE_DEBUG_UART_
 

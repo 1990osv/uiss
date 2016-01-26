@@ -7,7 +7,7 @@
 #include "MDR32F9Qx_rst_clk.h"
 #include "MDR32F9Qx_uart.h"
 #include "MDR32F9Qx_timer.h"
-
+#include "MDR32F9Qx_eeprom.h"
 
 #include "init.h"
 #include "timers.h"
@@ -20,13 +20,18 @@
 
 extern uint8_t DataByte;
 
-
-
 extern uint8_t RXbuf[16];
 extern uint8_t RXn;
 
 extern uint8_t TXbuf[16];
 extern uint8_t TXn,TXi;
+
+#define pT1		1
+#define pT2		2
+#define pT3		3
+#define pT4		4
+#define pT5		5
+#define pT6		6
 
 
 //void dbg_print( unsigned char *ptr)

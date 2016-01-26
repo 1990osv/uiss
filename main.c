@@ -18,9 +18,10 @@ uint8_t DataByte=0x30;
 uint32_t i;
 
 
+
+
 int main(void)
 {
-
 	CPU_init();
 	//dbg_print("Hello world!");	
 	GTimers_Init();
@@ -34,7 +35,11 @@ int main(void)
 	SysTick_Config(GLOBAL_CPU_CLOCK/10); // 80 MHz -> 0.1 sec
 
 	Uart1_Init();
-	
+	RXn=0;
+	__disable_irq();
+	EEPROM_ErasePage(Address, EEPROM_Info_Bank_Select);
+	EEPROM_ProgramWord(Address, EEPROM_Info_Bank_Select, data32);
+	__enable_irq();
 	while(1){
 //		if (GTimer_Get(REG_GTIMER)>=1000){ //10 == 1 ms
 //			GTimer_Reset(REG_GTIMER);
@@ -54,7 +59,7 @@ int main(void)
 			RXn=0;
 			GTimer_Stop(MB_GTIMER);
 		}
-			
+		///!!!!!!!!!!!!!!FLASH_PROG_FREQ_MHZ ->>>> 8.0 
 
 	}
 }

@@ -18,24 +18,24 @@ void CPU_init (void)
 	RST_CLK_PCLKcmd(RST_CLK_PCLK_EEPROM, ENABLE);	
 	EEPROM_SetLatency(EEPROM_Latency_3);
 	
-//  MDR_RST_CLK->PLL_CONTROL = ((1 << 2) | (9 << 8)); //вкл. PLL | коэф. умножения = 10
-//  while((MDR_RST_CLK->CLOCK_STATUS & 0x02) != 0x02); //ждем когда PLL выйдет в раб. режим
+  MDR_RST_CLK->PLL_CONTROL = ((1 << 2) | (9 << 8)); //вкл. PLL | коэф. умножения = 10
+  while((MDR_RST_CLK->CLOCK_STATUS & 0x02) != 0x02); //ждем когда PLL выйдет в раб. режим
 
-//  MDR_RST_CLK->CPU_CLOCK = (2 /*источник для CPU_C1*/
-//  | (1 << 2) /*источник для CPU_C2*/
-//  | (0 << 4) /*предделитель для CPU_C3*/
-//  | (1 << 8));/*источник для HCLK*/
-//	
+  MDR_RST_CLK->CPU_CLOCK = (2 /*источник для CPU_C1*/
+  | (1 << 2) /*источник для CPU_C2*/
+  | (0 << 4) /*предделитель для CPU_C3*/
+  | (1 << 8));/*источник для HCLK*/
+	
 
 //}
 //	//8 MHz
 //  MDR_RST_CLK->HS_CONTROL = 0x01; /* вкл. HSE осцилятора */
 //  while ((MDR_RST_CLK->CLOCK_STATUS & (1 << 2)) == 0x00); /* ждем пока HSE выйдет в рабочий режим */
 
-  MDR_RST_CLK->CPU_CLOCK = (2 /*источник для CPU_C1*/
-  | (0 << 2) /*источник для CPU_C2*/
-  | (0 << 4) /*предделитель для CPU_C3*/
-  | (1 << 8));/*источник для HCLK*/
+//  MDR_RST_CLK->CPU_CLOCK = (2 /*источник для CPU_C1*/
+//  | (0 << 2) /*источник для CPU_C2*/
+//  | (0 << 4) /*предделитель для CPU_C3*/
+//  | (1 << 8));/*источник для HCLK*/
 }
 void Init_All_Ports(void)
 {

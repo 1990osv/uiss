@@ -18,6 +18,9 @@
 #define GLOBAL_CPU_CLOCK 80000000
 //#define MY_DEBUG_PRINTF_USE
 
+#define PARAMETRS_CNT			20
+#define PARAMETRS_ADDR		0x08002000
+
 extern uint8_t DataByte;
 
 extern uint8_t RXbuf[16];

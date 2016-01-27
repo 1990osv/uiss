@@ -18,17 +18,14 @@ union __all Par;
 
 uint16_t Soder;
 
-
-
-
 void readParamToRAM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 	__disable_irq();
 	for(i = 0; i < PARAMETRS_CNT; i++){
 		ptr[i]=EEPROM_ReadWord(Address + i * 4, EEPROM_Main_Bank_Select);
-		if(ptr[i] == 0xFFFFFFFF)
-			writeDefaultParamToROM(Address,Par.BUF);
+		//if(ptr[i] == 0xFFFFFFFF)
+		//	writeDefaultParamToROM(Address,Par.BUF);
 	}
 	__enable_irq();
 }
@@ -65,14 +62,14 @@ int main(void)
 	
 	readParamToRAM(PARAMETRS_ADDR,Par.BUF);
 	
-	Par.BUF[0]=0xAAAAAAAA;
-	Par.BUF[1]=0xBBBBBBBB;
-	Par.BUF[2]=0xCCCCCCCC;
-	Par.BUF[3]=0xDDDDDDDD;
-	Par.BUF[4]=0xEEEEEEEE;
-	Par.BUF[PARAMETRS_CNT-1]=0x11111111;
-	
-	writeParamToROM(PARAMETRS_ADDR,Par.BUF);
+//	Par.BUF[0]=0xAAAAAAAA;
+//	Par.BUF[1]=0xBBBBBBBB;
+//	Par.BUF[2]=0xCCCCCCCC;
+//	Par.BUF[3]=0xDDDDDDDD;
+//	Par.BUF[4]=0xEEEEEEEE;
+//	Par.BUF[PARAMETRS_CNT-1]=0x11111111;
+//	
+//	writeParamToROM(PARAMETRS_ADDR,Par.BUF);
 	
 	GTimers_Init();
 	GTimer_Run(REG_GTIMER);

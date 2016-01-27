@@ -12,64 +12,67 @@ uint8_t TXn,TXi;
 
 uint32_t i;
 
-uint32_t RAMParam[PARAMETRS_CNT];
+//uint32_t RAMParam[PARAMETRS_CNT];
 
-void readParamToRAM(uint32_t Address);
-void writeDefaultParamToROM(uint32_t Address);
-void writeParamToROM(uint32_t Address);
-	
+union __all Par;
 
-void readParamToRAM(uint32_t Address)
+uint16_t Soder;
+
+
+
+
+void readParamToRAM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 	__disable_irq();
 	for(i = 0; i < PARAMETRS_CNT; i++){
-		RAMParam[i]=EEPROM_ReadWord(Address + i * 4, EEPROM_Main_Bank_Select);
-		if(RAMParam[i] == 0xFFFFFFFF)
-			writeDefaultParamToROM(Address);
+		ptr[i]=EEPROM_ReadWord(Address + i * 4, EEPROM_Main_Bank_Select);
+		if(ptr[i] == 0xFFFFFFFF)
+			writeDefaultParamToROM(Address,Par.BUF);
 	}
 	__enable_irq();
 }
 
-void writeDefaultParamToROM(uint32_t Address)
+void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 	__disable_irq();
 	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);
 	for(i = 0; i < PARAMETRS_CNT; i++){
 		EEPROM_ProgramWord(Address + i * 4, EEPROM_Main_Bank_Select, 0x00000000);
-		RAMParam[i] = 0x00000000;
+		ptr[i] = 0x00000000;
 	}
 	__enable_irq();
 }
 
 
-void writeParamToROM(uint32_t Address)
+void writeParamToROM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 	__disable_irq();
 	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);
 	for(i = 0; i < PARAMETRS_CNT; i++){
-		EEPROM_ProgramWord(Address + i * 4, EEPROM_Main_Bank_Select, RAMParam[i]);
+		EEPROM_ProgramWord(Address + i * 4, EEPROM_Main_Bank_Select, ptr[i]);
 	}
 	__enable_irq();
 }
+
 
 int main(void)
 {
 	CPU_init();
 	//dbg_print("Hello world!");	
 	
-	readParamToRAM(PARAMETRS_ADDR);
+	readParamToRAM(PARAMETRS_ADDR,Par.BUF);
 	
-	RAMParam[0]=0xAAAAAAAA;
-	RAMParam[1]=0xBBBBBBBB;
-	RAMParam[2]=0xCCCCCCCC;
-	RAMParam[3]=0xDDDDDDDD;
-	RAMParam[4]=0xEEEEEEEE;
-	RAMParam[PARAMETRS_CNT-1]=0x11111111;
+	Par.BUF[0]=0xAAAAAAAA;
+	Par.BUF[1]=0xBBBBBBBB;
+	Par.BUF[2]=0xCCCCCCCC;
+	Par.BUF[3]=0xDDDDDDDD;
+	Par.BUF[4]=0xEEEEEEEE;
+	Par.BUF[PARAMETRS_CNT-1]=0x11111111;
 	
-	writeParamToROM(PARAMETRS_ADDR);
+	writeParamToROM(PARAMETRS_ADDR,Par.BUF);
 	
 	GTimers_Init();
 	GTimer_Run(REG_GTIMER);
@@ -83,6 +86,8 @@ int main(void)
 
 	Uart1_Init();
 	RXn = 0;
+
+
 
 	while(1){
 //		if (GTimer_Get(REG_GTIMER)>=1000){ //10 == 1 ms

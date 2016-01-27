@@ -21,7 +21,6 @@
 #define PARAMETRS_CNT			20
 #define PARAMETRS_ADDR		0x08002000
 
-extern uint8_t DataByte;
 
 extern uint8_t RXbuf[16];
 extern uint8_t RXn;
@@ -29,14 +28,29 @@ extern uint8_t RXn;
 extern uint8_t TXbuf[16];
 extern uint8_t TXn,TXi;
 
-#define pT1		1
-#define pT2		2
-#define pT3		3
-#define pT4		4
-#define pT5		5
-#define pT6		6
 
 
+extern uint16_t Soder;
+
+union __all {
+  struct {
+    char aa;
+    char bb;
+    char cc;
+		char dd;
+		unsigned int DeadTime;
+    };
+	uint32_t BUF[PARAMETRS_CNT];
+  };
+
+extern union __all Par;
+	
+
+
+void readParamToRAM(uint32_t Address, uint32_t *ptr);
+void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr);
+void writeParamToROM(uint32_t Address, uint32_t *ptr);
+	
 //void dbg_print( unsigned char *ptr)
 //{
 //#ifdef MY_DEBUG_PRINTF_USE

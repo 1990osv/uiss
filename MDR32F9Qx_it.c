@@ -139,6 +139,9 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
 	MDR_PORTC->RXTX ^= (1<<1);
+	Soder++;
+	if(Soder>100)
+		Soder=0;
 }
 /*******************************************************************************
 * Function Name  : CAN1_IRQHandler

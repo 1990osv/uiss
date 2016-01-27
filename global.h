@@ -21,6 +21,10 @@
 #define PARAMETRS_CNT			20
 #define PARAMETRS_ADDR		0x08002000
 
+#define ADDR_SODER		1
+#define ADDR_DEAD_TIME		2
+
+#define ADDR_MYFLOAT		4
 
 extern uint8_t RXbuf[16];
 extern uint8_t RXn;
@@ -39,12 +43,25 @@ union __all {
     char cc;
 		char dd;
 		unsigned int DeadTime;
+		float myFloat;
     };
 	uint32_t BUF[PARAMETRS_CNT];
   };
 
 extern union __all Par;
-	
+
+
+//union __float_4byte {
+//	struct {
+//		char aa;
+//		char bb;
+//		char cc;
+//		char dd;
+//	};
+//	float ffloat;
+//};
+
+//union __float_4byte fpar;
 
 
 void readParamToRAM(uint32_t Address, uint32_t *ptr);

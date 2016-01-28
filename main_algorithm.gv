@@ -1,0 +1,23 @@
+digraph G { 
+	graph [rankdir=LR nodesep=0]
+	{
+	node [fontsize=14]
+	//node [shape = box];
+
+	C [label="MB_Complete"];
+	P [label="MB_Processing"];
+	S [label="MB_Send_Answer"];
+	E [label="MB_Function_Err"];
+	
+	C -> P  [arrowhead=normal ];
+
+	P -> S  [arrowhead=normal ];
+
+	S -> C [arrowhead=normal ];
+	
+	P -> E [arrowhead=normal ];
+
+	E -> C [arrowhead=normal ];
+
+	}
+}

@@ -138,10 +138,12 @@ void PendSV_Handler(void)
 *******************************************************************************/
 void SysTick_Handler(void)
 {
-	MDR_PORTC->RXTX ^= (1<<1);
+	loopStart();
+	//MDR_PORTC->RXTX ^= (1<<1);
 	Soder++;
 	if(Soder>100)
 		Soder=0;
+	
 }
 /*******************************************************************************
 * Function Name  : CAN1_IRQHandler
@@ -279,13 +281,22 @@ void Timer1_IRQHandler(void)
 * Output         : None
 * Return         : None
 *******************************************************************************/
+
+#define DELAY_LOOP_CYCLES               (8UL)
+#define GET_US_LOOPS(N)                 ((uint32_t)((float)(N) * (FLASH_PROG_FREQ_MHZ/10) / DELAY_LOOP_CYCLES))
+
 void Timer2_IRQHandler(void)
 {
-	//query();
+	query();
+	main_time+=MDR_TIMER2->CNT; //общее время
 	MDR_TIMER2->CNT = 0x0000;
 	MDR_TIMER2->STATUS &= ~(1 << 1);
 	NVIC_ClearPendingIRQ(Timer2_IRQn);
-
+//	if(main_time >= Par.Time5*80){
+//		loopStop();
+//	} else{
+		
+//	}
 }
 /*******************************************************************************
 * Function Name  : Timer3_IRQHandler

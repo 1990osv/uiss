@@ -39,79 +39,135 @@ void CPU_init (void)
 }
 void Init_All_Ports(void)
 {
-PORT_InitTypeDef PORT_InitStructure;
+	PORT_InitTypeDef PORT_InitStructure;
 
-  /* Enable the RTCHSE clock on all ports */
-  RST_CLK_PCLKcmd(ALL_PORTS_CLK, ENABLE);
+	/* Enable the RTCHSE clock on all ports */
+	RST_CLK_PCLKcmd(ALL_PORTS_CLK, ENABLE);
+	/* Configure all ports to the state as after reset, i.e. low power consumption */
+	PORT_StructInit(&PORT_InitStructure);
+	PORT_Init(MDR_PORTA, &PORT_InitStructure);
+	PORT_Init(MDR_PORTB, &PORT_InitStructure);
+	PORT_Init(MDR_PORTC, &PORT_InitStructure);
+	PORT_Init(MDR_PORTD, &PORT_InitStructure);
+	PORT_Init(MDR_PORTE, &PORT_InitStructure);
+	PORT_Init(MDR_PORTF, &PORT_InitStructure);
+	/* Disable the RTCHSE clock on all ports */
+	RST_CLK_PCLKcmd(ALL_PORTS_CLK, DISABLE);
 
-  /* Configure all ports to the state as after reset, i.e. low power consumption */
-  PORT_StructInit(&PORT_InitStructure);
-  PORT_Init(MDR_PORTA, &PORT_InitStructure);
-  PORT_Init(MDR_PORTB, &PORT_InitStructure);
-  PORT_Init(MDR_PORTC, &PORT_InitStructure);
-  PORT_Init(MDR_PORTD, &PORT_InitStructure);
-  PORT_Init(MDR_PORTE, &PORT_InitStructure);
-  PORT_Init(MDR_PORTF, &PORT_InitStructure);
+	/* Enables the RTCHSE clock on PORTB, PORTC and PORTE */
+	//RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTB | RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTE, ENABLE);
+	RST_CLK_PCLKcmd(ALL_PORTS_CLK, ENABLE);
 
-  /* Disable the RTCHSE clock on all ports */
-  RST_CLK_PCLKcmd(ALL_PORTS_CLK, DISABLE);
 	
-  /* Enables the RTCHSE clock on PORTB, PORTC and PORTE */
-  RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTB | RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTE, ENABLE);
+	/* Configure PORTA 
+	*  pins DATAL_MASK - in
+	*/
+	PORT_InitStructure.PORT_Pin   = (DATAL_MASK);
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTC, &PORT_InitStructure);	
+	
+	/* Configure PORTC 
+	*  pins DOT8,DOT9 for output to switch LEDs on/off 
+	*/
+	PORT_InitStructure.PORT_Pin   = (DOT8_PIN_C | DOT9_PIN_C);
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTC, &PORT_InitStructure);
+	/* pin data15 - in
+	*/
+	PORT_InitStructure.PORT_Pin   = (DATA15_PIN_C);
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTC, &PORT_InitStructure);
 
-  /* Configure PORTC pins 0,1 for output to switch LEDs on/off */
+	/* Configure PORTE 
+	*  pins START, DOT4, DOT5 - out
+	*/
+	PORT_InitStructure.PORT_Pin   = (START_PIN_E | DOT4_PIN_E | DOT5_PIN_E);
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTE, &PORT_InitStructure);
+	/* pin - DEF in - начальная установка
+	*/
+	PORT_InitStructure.PORT_Pin   = (DEF_PIN_E);
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTE, &PORT_InitStructure);
 
-  PORT_InitStructure.PORT_Pin   = (PORT_Pin_0 | PORT_Pin_1);
-  PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
-  PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-  PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-  PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	/* Configure PORTF 
+	*  pins WR, RESDAT, DT, RZ - out
+	*/
+	PORT_InitStructure.PORT_Pin   = (WR_PIN_F | RESDAT_PIN_F | DT_PIN_F | RZ_PIN_F);
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTF, &PORT_InitStructure);
 
-  PORT_Init(MDR_PORTC, &PORT_InitStructure);
+	/* Configure PORTB 
+	*  pins DE, DV, DOT6, DOT7 - out
+	*/
+	PORT_InitStructure.PORT_Pin   = (DE_PIN_B | DV_PIN_B | DOT6_PIN_B | DOT7_PIN_B);
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTB, &PORT_InitStructure);
 
-  /* Configure PORTB pin 6 for input to handle joystick events */
 
-  PORT_InitStructure.PORT_Pin   = (PORT_Pin_6);
-  PORT_InitStructure.PORT_OE    = PORT_OE_IN;
-  PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-  PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-  PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-
-  PORT_Init(MDR_PORTB, &PORT_InitStructure);
-
-/* Configure PORTE pin 3 for input to handle joystick events */
-
-  PORT_InitStructure.PORT_Pin   = (PORT_Pin_3);
-  PORT_InitStructure.PORT_OE    = PORT_OE_IN;
-  PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-  PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-  PORT_InitStructure.PORT_SPEED = PORT_SPEED_SLOW;
-
-  PORT_Init(MDR_PORTE, &PORT_InitStructure);
+	/* Configure PORTD
+	*  pins ADC - analog input
+	*/
+	PORT_InitStructure.PORT_Pin   = (ADC_PIN_D);
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	//PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_ANALOG;
+	//PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTD, &PORT_InitStructure);
+	/* pin - DATAH_MASK in 
+	*/
+	PORT_InitStructure.PORT_Pin   = (DATAH_MASK);
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTD, &PORT_InitStructure);
 
 }
 
 
 void Timer_Init(void){
-  MDR_RST_CLK->PER_CLOCK |= 1 << 14; //разрешение тактирования Таймера 1
-  MDR_RST_CLK->PER_CLOCK |= 1 << 15; //разрешение тактирования Таймера 2
+	MDR_RST_CLK->PER_CLOCK |= 1 << 14; //разрешение тактирования Таймера 1
+	MDR_RST_CLK->PER_CLOCK |= 1 << 15; //разрешение тактирования Таймера 2
 	MDR_RST_CLK->TIM_CLOCK = (
-  3 /*делитель тактовой частоты Таймера 1*/
-  |(1 << 24) /*разешение тактирования Таймера 1*/
-  |(0 << 8) /*делитель тактовой частоты Таймера 2*/
-  |(1 << 25) /*разешение тактирования Таймера 2*/
-  );
+		3 /*делитель тактовой частоты Таймера 1*/
+		|(1 << 24) /*разешение тактирования Таймера 1*/
+		|(0 << 8) /*делитель тактовой частоты Таймера 2*/
+		|(1 << 25) /*разешение тактирования Таймера 2*/
+	);
 
-  MDR_TIMER1->PSG = 0x0;
-  MDR_TIMER1->ARR = 999; //9999 -> 10 ms  999 -> ==100 us
+	MDR_TIMER1->PSG = 0x0;
+	MDR_TIMER1->ARR = 999; //9999 -> 10 ms  999 -> ==100 us
 
-  MDR_TIMER1->IE = (1 << 1); //разрешение прерывания по совпадению
-  MDR_TIMER1->CNTRL = 1; /*счет вверх по TIM_CLK, таймер вкл.*/
+	MDR_TIMER1->IE = (1 << 1); //разрешение прерывания по совпадению
+	MDR_TIMER1->CNTRL = 1; /*счет вверх по TIM_CLK, таймер вкл.*/
+
 	NVIC_SetPriority(Timer1_IRQn,3);
 	NVIC_EnableIRQ(Timer1_IRQn);
 
 	NVIC_SetPriority(Timer2_IRQn,1);
-  NVIC_EnableIRQ(Timer2_IRQn);
+	NVIC_EnableIRQ(Timer2_IRQn);
 
 
 }
@@ -150,6 +206,7 @@ void Uart1_Init(void)
 	/* Set the HCLK division factor = 16 for UART1*/
 	UART_BRGInit(MDR_UART1, UART_HCLKdiv16);
 
+	NVIC_SetPriority(UART1_IRQn,2);	
 	NVIC_EnableIRQ(UART1_IRQn);
 
 	UART_InitStructure.UART_BaudRate                = 9600;

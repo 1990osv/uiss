@@ -13,18 +13,27 @@
 #include "timers.h"
 #include "main_algorithm.h"
 #include "modbus.h"
+#include "ports.h"
 #include <stdio.h>
 
 #define GLOBAL_CPU_CLOCK 80000000
 //#define MY_DEBUG_PRINTF_USE
 
 #define PARAMETRS_CNT			20
-#define PARAMETRS_ADDR		0x08002000
+#define PARAMETRS_ADDR		0x08010000
 
 #define ADDR_SODER		1
 #define ADDR_DEAD_TIME		2
 
 #define ADDR_MYFLOAT		4
+
+#define ADDR_TIME1		5
+#define ADDR_TIME2		6
+#define ADDR_TIME3		7
+#define ADDR_TIME4		8
+#define ADDR_TIME5		9
+#define ADDR_TIME6		10
+
 
 extern uint8_t RXbuf[16];
 extern uint8_t RXn;
@@ -33,6 +42,7 @@ extern uint8_t TXbuf[16];
 extern uint8_t TXn,TXi;
 
 
+extern volatile unsigned int main_time;
 
 extern uint16_t Soder;
 
@@ -44,24 +54,17 @@ union __all {
 		char dd;
 		unsigned int DeadTime;
 		float myFloat;
+		unsigned int Time1;
+		unsigned int Time2;
+		unsigned int Time3;
+		unsigned int Time4;
+		unsigned int Time5;
+		unsigned int Time6;
     };
 	uint32_t BUF[PARAMETRS_CNT];
   };
 
 extern union __all Par;
-
-
-//union __float_4byte {
-//	struct {
-//		char aa;
-//		char bb;
-//		char cc;
-//		char dd;
-//	};
-//	float ffloat;
-//};
-
-//union __float_4byte fpar;
 
 
 void readParamToRAM(uint32_t Address, uint32_t *ptr);

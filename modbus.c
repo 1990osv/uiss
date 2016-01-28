@@ -96,6 +96,50 @@ void MB_F03(unsigned char *data, unsigned char n)
 		addCRC16(TXbuf,7); //ToDo
 		TXn=9;
 	}break;
+
+	case ADDR_TIME1:{
+		TXbuf[3] = (Par.Time1>>8) & 0x00FF;
+		TXbuf[4] = Par.Time1 & 0x00FF;
+		addCRC16(TXbuf,5); //ToDo
+		TXn=7;
+	}break;	
+
+	case ADDR_TIME2:{
+		TXbuf[3] = (Par.Time2>>8) & 0x00FF;
+		TXbuf[4] = Par.Time2 & 0x00FF;
+		addCRC16(TXbuf,5); //ToDo
+		TXn=7;
+	}break;	
+	
+	case ADDR_TIME3:{
+		TXbuf[3] = (Par.Time3>>8) & 0x00FF;
+		TXbuf[4] = Par.Time3 & 0x00FF;
+		addCRC16(TXbuf,5); //ToDo
+		TXn=7;
+	}break;	
+		
+	case ADDR_TIME4:{
+		TXbuf[3] = (Par.Time4>>8) & 0x00FF;
+		TXbuf[4] = Par.Time4 & 0x00FF;
+		addCRC16(TXbuf,5); //ToDo
+		TXn=7;
+	}break;	
+		
+	case ADDR_TIME5:{
+		TXbuf[3] = (Par.Time5>>8) & 0x00FF;
+		TXbuf[4] = Par.Time5 & 0x00FF;
+		addCRC16(TXbuf,5); //ToDo
+		TXn=7;
+	}break;	
+		
+	case ADDR_TIME6:{
+		TXbuf[3] = (Par.Time6>>8) & 0x00FF;
+		TXbuf[4] = Par.Time6 & 0x00FF;
+		addCRC16(TXbuf,5); //ToDo
+		TXn=7;
+	}break;	
+	
+
 	default:
 		mb_exception_rsp(data[1],0x02);
 		return;
@@ -172,6 +216,36 @@ void MB_F10(unsigned char *data, unsigned char n)
 		//Par.myFloat = data[8] + (data[7] << 8);
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
 	}break;
+
+	case ADDR_TIME1:{
+		Par.Time1 = data[8] + (data[7] << 8);
+		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
+	}break;	
+
+	case ADDR_TIME2:{
+		Par.Time2 = data[8] + (data[7] << 8);
+		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
+	}break;	
+	
+	case ADDR_TIME3:{
+		Par.Time3 = data[8] + (data[7] << 8);
+		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
+	}break;	
+		
+	case ADDR_TIME4:{
+		Par.Time4 = data[8] + (data[7] << 8);
+		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
+	}break;	
+		
+	case ADDR_TIME5:{
+		Par.Time5 = data[8] + (data[7] << 8);
+		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
+	}break;	
+		
+	case ADDR_TIME6:{
+		Par.Time6 = data[8] + (data[7] << 8);
+		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
+	}break;	
 	
 	default:
 		mb_exception_rsp(0x10,0x02);

@@ -29,7 +29,7 @@ static uint8_t i = 0;
 	for(i = 0; i < PARAMETRS_CNT; i++){
 		ptr[i]=EEPROM_ReadWord(Address + i * 4, EEPROM_Main_Bank_Select);
 	}
-	if(ptr[1] == 0xFFFFFFFF)
+	if(ptr[2] == 0xFFFFFFFF)
 		writeDefaultParamToROM(Address,Par.BUF);
 	__enable_irq();
 }
@@ -38,19 +38,14 @@ void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 
-	Par.DeadTime=24;
-	Par.myFloat=(float)Par.DeadTime;
-	
-	//смещение 1.75 us
-	//
-	
-	Par.Time1=750;   // стартовый импульс 7.5 us
-	Par.Time2=2400;  // мертвое время 24 us
-	Par.Time3=3600;  // ожидание 36 us
-	Par.Time4=500;	 // строб 5 us
-	Par.Time5=11500; // общее время ? реально ~120 us
-	Par.Time6=175;	 // смещение 1.75 us
-
+	Par.Sod		= 0;		//содержание связующего
+	Par.Time1	= 750;  	// стартовый импульс 7.5 us
+	Par.Time2	= 2400; 	// мертвое время 24 us
+	Par.Time3	= 3600; 	// ожидание 36 us
+	Par.Time4	= 500;		// строб 5 us
+	Par.Time5	= 11500;	// общее время ? реально ~120 us
+	Par.Time6	= 175;		// смещение 1.75 us
+	Par.myFloat	= 10;
 	__disable_irq();
 	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);
 	for(i = 0; i < PARAMETRS_CNT; i++){
@@ -60,10 +55,11 @@ static uint8_t i = 0;
 		else{
 			EEPROM_ProgramWord(Address + i * 4, EEPROM_Main_Bank_Select, 0x00000000);		
 		}
-			
 	}
 	__enable_irq();
 }
+
+
 
 
 void writeParamToROM(uint32_t Address, uint32_t *ptr)
@@ -79,7 +75,6 @@ static uint8_t i = 0;
 	__enable_irq();
 }
 
-
 int main(void)
 {
 	CPU_init();
@@ -87,19 +82,8 @@ int main(void)
 	
 	readParamToRAM(PARAMETRS_ADDR,Par.BUF);
 	
-//	Par.BUF[0]=0xAAAAAAAA;
-//	Par.BUF[1]=0xBBBBBBBB;
-//	Par.BUF[2]=0xCCCCCCCC;
-//	Par.BUF[3]=0xDDDDDDDD;
-//	Par.BUF[4]=0xEEEEEEEE;
-//	Par.BUF[PARAMETRS_CNT-1]=0x11111111;
-//	
-//	writeParamToROM(PARAMETRS_ADDR,Par.BUF);
-	
 	GTimers_Init();
 	GTimer_Run(REG_GTIMER);
-
-	// Вывод в отладочный порт строки
 
 	Init_All_Ports();
 	
@@ -109,20 +93,7 @@ int main(void)
 	Uart1_Init();
 	RXn = 0;
 
-
-
 	while(1){
-//		if (GTimer_Get(REG_GTIMER)>=1000){ //10 == 1 ms
-//			GTimer_Reset(REG_GTIMER);
-//			if(DataByte <= 0x39){
-//				MDR_PORTC->RXTX ^= (1<<1);
-//				/* Check TXFE flag */
-//				while (UART_GetFlagStatus (MDR_UART1, UART_FLAG_TXFE)!= SET){
-//				}
-//				UART_SendData (MDR_UART1, (uint16_t)(TXbuf[]));
-//				TXn++;
-//			}
-//		}
 		
 		if (GTimer_Get(MB_GTIMER) >= 100){  //10ms
 			//if(GetStatus()!=MB_COMPLETE)

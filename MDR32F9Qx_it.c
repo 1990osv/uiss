@@ -139,10 +139,20 @@ void PendSV_Handler(void)
 void SysTick_Handler(void)
 {
 	loopStart();
-	//MDR_PORTC->RXTX ^= (1<<1);
+	MDR_PORTC->RXTX ^= (1<<1);
+	
+//	MDR_PORTE->RXTX ^= (1<<6);
+//	MDR_PORTE->RXTX ^= (1<<7);
+//	DOT4_PORT->RXTX ^=(DOT4_PIN_E<<1);
+	
 	Soder++;
-	if(Soder>100)
+	
+	if(Soder>10){
 		Soder=0;
+		Par.Sod++;
+		if(Par.Sod > 50)
+			Par.Sod=0;
+	}
 	
 }
 /*******************************************************************************
@@ -203,9 +213,14 @@ void UART1_IRQHandler(void)
 	}
 	if (UART_GetITStatusMasked(MDR_UART1, UART_IT_TX) == SET){
 		UART_ClearITPendingBit(MDR_UART1, UART_IT_TX);
-		if(TXn>TXi)
+		if(TXn>TXi){
 			UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
-		//uart1_IT_TX_flag = SET;
+		}
+		else if(TXn==TXi){
+			MDR_PORTE->RXTX &= ~(1<<6);//MDR_PORTE->RXTX |= (1<<6);
+		}
+
+
 	}
 	
 }

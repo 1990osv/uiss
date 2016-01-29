@@ -23,7 +23,7 @@
 #define RZ_PORT			MDR_PORTF
 
 #define DE_PIN_B		PORT_Pin_7
-#define DV_PORT			MDR_PORTB
+#define DE_PORT			MDR_PORTB
 
 #define DV_PIN_B		PORT_Pin_10
 #define DV_PORT			MDR_PORTB

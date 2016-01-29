@@ -17,13 +17,11 @@
 #include <stdio.h>
 
 #define GLOBAL_CPU_CLOCK 80000000
-//#define MY_DEBUG_PRINTF_USE
 
-#define PARAMETRS_CNT			20
+#define PARAMETRS_CNT		20
 #define PARAMETRS_ADDR		0x08010000
 
 #define ADDR_SODER		1
-#define ADDR_DEAD_TIME		2
 
 #define ADDR_MYFLOAT		4
 
@@ -34,25 +32,22 @@
 #define ADDR_TIME5		9
 #define ADDR_TIME6		10
 
-
 extern uint8_t RXbuf[16];
 extern uint8_t RXn;
 
 extern uint8_t TXbuf[16];
 extern uint8_t TXn,TXi;
 
-
 extern volatile unsigned int main_time;
 
 extern uint16_t Soder;
 
 union __all {
-  struct {
-    char aa;
-    char bb;
-    char cc;
-		char dd;
-		unsigned int DeadTime;
+	struct {
+		unsigned char Sod;
+		unsigned char aa;
+		unsigned char bb;
+		unsigned char cc;
 		float myFloat;
 		unsigned int Time1;
 		unsigned int Time2;
@@ -60,9 +55,10 @@ union __all {
 		unsigned int Time4;
 		unsigned int Time5;
 		unsigned int Time6;
-    };
+		
+	};
 	uint32_t BUF[PARAMETRS_CNT];
-  };
+};
 
 extern union __all Par;
 

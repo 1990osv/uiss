@@ -40,6 +40,12 @@ void CPU_init (void)
 void Init_All_Ports(void)
 {
 	PORT_InitTypeDef PORT_InitStructure;
+	//PORT_InitTypeDef PORTA_InitStructure;
+	//PORT_InitTypeDef PORTB_InitStructure;
+	PORT_InitTypeDef PORTC_InitStructure;
+	//PORT_InitTypeDef PORTD_InitStructure;
+	PORT_InitTypeDef PORTE_InitStructure;
+	//PORT_InitTypeDef PORTF_InitStructure;
 
 	/* Enable the RTCHSE clock on all ports */
 	RST_CLK_PCLKcmd(ALL_PORTS_CLK, ENABLE);
@@ -53,96 +59,49 @@ void Init_All_Ports(void)
 	PORT_Init(MDR_PORTF, &PORT_InitStructure);
 	/* Disable the RTCHSE clock on all ports */
 	RST_CLK_PCLKcmd(ALL_PORTS_CLK, DISABLE);
-
-	/* Enables the RTCHSE clock on PORTB, PORTC and PORTE */
-	//RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTB | RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTE, ENABLE);
-	RST_CLK_PCLKcmd(ALL_PORTS_CLK, ENABLE);
-
 	
-	/* Configure PORTA 
-	*  pins DATAL_MASK - in
-	*/
-	PORT_InitStructure.PORT_Pin   = (DATAL_MASK);
-	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTC, &PORT_InitStructure);	
 	
-	/* Configure PORTC 
-	*  pins DOT8,DOT9 for output to switch LEDs on/off 
-	*/
-	PORT_InitStructure.PORT_Pin   = (DOT8_PIN_C | DOT9_PIN_C);
-	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTC, &PORT_InitStructure);
-	/* pin data15 - in
-	*/
-	PORT_InitStructure.PORT_Pin   = (DATA15_PIN_C);
-	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTC, &PORT_InitStructure);
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTB |RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTE, ENABLE);
 
-	/* Configure PORTE 
-	*  pins START, DOT4, DOT5 - out
-	*/
-	PORT_InitStructure.PORT_Pin   = (START_PIN_E | DOT4_PIN_E | DOT5_PIN_E);
-	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTE, &PORT_InitStructure);
-	/* pin - DEF in - начальная установка
-	*/
-	PORT_InitStructure.PORT_Pin   = (DEF_PIN_E);
-	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTE, &PORT_InitStructure);
-
-	/* Configure PORTF 
-	*  pins WR, RESDAT, DT, RZ - out
-	*/
-	PORT_InitStructure.PORT_Pin   = (WR_PIN_F | RESDAT_PIN_F | DT_PIN_F | RZ_PIN_F);
-	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTF, &PORT_InitStructure);
-
-	/* Configure PORTB 
-	*  pins DE, DV, DOT6, DOT7 - out
-	*/
-	PORT_InitStructure.PORT_Pin   = (DE_PIN_B | DV_PIN_B | DOT6_PIN_B | DOT7_PIN_B);
-	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTB, &PORT_InitStructure);
-
-
-	/* Configure PORTD
-	*  pins ADC - analog input
-	*/
-	PORT_InitStructure.PORT_Pin   = (ADC_PIN_D);
-	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
-	//PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_ANALOG;
-	//PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTD, &PORT_InitStructure);
-	/* pin - DATAH_MASK in 
-	*/
-	PORT_InitStructure.PORT_Pin   = (DATAH_MASK);
-	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
-	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
-	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
-	PORT_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PORT_Init(MDR_PORTD, &PORT_InitStructure);
+	/* Configure PORTC */
+	PORTC_InitStructure.PORT_Pin	= (DOT8_PIN_C | DOT9_PIN_C);
+	PORTC_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+	PORTC_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+	PORTC_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+	PORTC_InitStructure.PORT_OE	= PORT_OE_OUT;		//направление - выход
+	PORTC_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+	PORTC_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+	PORTC_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PORTC_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PORTC_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTC, &PORTC_InitStructure);
+	
+	/* Configure PORTE */
+	PORTE_InitStructure.PORT_Pin	= (DOT4_PIN_E | DOT5_PIN_E);
+	PORTE_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+	PORTE_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+	PORTE_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+	PORTE_InitStructure.PORT_OE	= PORT_OE_OUT;		//направление - выход
+	PORTE_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+	PORTE_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+	PORTE_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PORTE_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PORTE_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTE, &PORTE_InitStructure);
+	
+//	/* Configure PORTB */
+//	PORTB_InitStructure.PORT_Pin	= (DE_PIN_B);
+//	PORTB_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+//	PORTB_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+//	PORTB_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+//	PORTB_InitStructure.PORT_OE	= PORT_OE_OUT;		//направление - выход
+//	PORTB_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+//	PORTB_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+//	PORTB_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+//	PORTB_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+//	PORTB_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+//	PORT_Init(MDR_PORTB, &PORTB_InitStructure);	
+	
 
 }
 

@@ -145,14 +145,7 @@ void SysTick_Handler(void)
 //	MDR_PORTE->RXTX ^= (1<<7);
 //	DOT4_PORT->RXTX ^=(DOT4_PIN_E<<1);
 	
-	Soder++;
-	
-	if(Soder>10){
-		Soder=0;
-		Par.Sod++;
-		if(Par.Sod > 50)
-			Par.Sod=0;
-	}
+
 	
 }
 /*******************************************************************************
@@ -217,7 +210,9 @@ void UART1_IRQHandler(void)
 			UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
 		}
 		else if(TXn==TXi){
-			MDR_PORTE->RXTX &= ~(1<<6);//MDR_PORTE->RXTX |= (1<<6);
+			//MDR_PORTE->RXTX &= ~(1<<6);//MDR_PORTE->RXTX |= (1<<6);
+			DOT4_PORT->RXTX &= ~(1<<DOT4_PIN);
+			//PORT_ResetBits(DOT4_PORT,DOT4_PIN);
 		}
 
 
@@ -307,11 +302,6 @@ void Timer2_IRQHandler(void)
 	MDR_TIMER2->CNT = 0x0000;
 	MDR_TIMER2->STATUS &= ~(1 << 1);
 	NVIC_ClearPendingIRQ(Timer2_IRQn);
-//	if(main_time >= Par.Time5*80){
-//		loopStop();
-//	} else{
-		
-//	}
 }
 /*******************************************************************************
 * Function Name  : Timer3_IRQHandler

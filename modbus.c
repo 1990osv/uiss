@@ -10,8 +10,11 @@
 static volatile unsigned char status=MB_COMPLETE;
 
 static void MB_F03(unsigned char *data, unsigned char n);
+static void MB_F05(unsigned char *data, unsigned char n);
 static void MB_F10(unsigned char *data, unsigned char n);
 static void mb_exception_rsp(unsigned char func, unsigned char code);
+
+static void send_msg(unsigned char n);
 
 unsigned char GetStatus(void)
 {
@@ -41,7 +44,10 @@ unsigned char razbor(unsigned char *data, unsigned char n)
 	
 	if(data[1]==0x03){
 		MB_F03(data,n);
-	}
+	}	
+	else if (data[1] == 0x05){
+		MB_F05(data,n);
+	}	
 	else if (data[1] == 0x10){
 		MB_F10(data,n);
 	}	
@@ -54,86 +60,57 @@ unsigned char razbor(unsigned char *data, unsigned char n)
 
 void MB_F03(unsigned char *data, unsigned char n)
 {
+	uint16_t addr=0, count=0;
+	uint8_t	i=0;
+	
+	count = data[5]*2; //registrs count
+	addr = data[3]+(data[2]<<8);
+	
+	if(addr+count>PARAMETRS_CNT*4){
+		mb_exception_rsp(data[1],0x02);	
+	}
+	
+	TXbuf[2] = count;
+
+	for(i=0;i<count;i+=2){
+		TXbuf[3+i] = Par.bbuf[addr+i+1];
+		TXbuf[3+i+1] = Par.bbuf[addr+i];
+	}
+
+	send_msg(3+count);
+}
+
+
+void MB_F05(unsigned char *data, unsigned char n)
+{
 	uint16_t addr=0;
 	
-	TXbuf[2] = data[5]*2; //registrs count
-	
-	
+	TXbuf[1]=data[1];
+	TXbuf[2]=data[2];
+	TXbuf[3]=data[3];
+	TXbuf[4]=data[4];
+	TXbuf[5]=data[5];
+
 	addr = data[3]+(data[2]<<8);
 
 	switch (addr)
 	{
-	case ADDR_SODER:{
-		TXbuf[3] = 0x00;	
-		TXbuf[4] = Par.Sod;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
+	case 0:{
+		if(TXbuf[4] == 0xFF)
+			Par.Sod++;
 	} break;
-
-	case 3:{
-		TXbuf[3] = 0xFF;
-		TXbuf[4] = 0xFF;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
-	}break;
-	case ADDR_MYFLOAT:{
-		memcpy(&TXbuf[3],&Par.myFloat,4);
-		addCRC16(TXbuf,7); //ToDo
-		TXn=9;
-	}break;
-
-	case ADDR_TIME1:{
-		TXbuf[3] = (Par.Time1>>8) & 0x00FF;
-		TXbuf[4] = Par.Time1 & 0x00FF;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
-	}break;	
-
-	case ADDR_TIME2:{
-		TXbuf[3] = (Par.Time2>>8) & 0x00FF;
-		TXbuf[4] = Par.Time2 & 0x00FF;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
-	}break;	
 	
-	case ADDR_TIME3:{
-		TXbuf[3] = (Par.Time3>>8) & 0x00FF;
-		TXbuf[4] = Par.Time3 & 0x00FF;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
-	}break;	
-		
-	case ADDR_TIME4:{
-		TXbuf[3] = (Par.Time4>>8) & 0x00FF;
-		TXbuf[4] = Par.Time4 & 0x00FF;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
-	}break;	
-		
-	case ADDR_TIME5:{
-		TXbuf[3] = (Par.Time5>>8) & 0x00FF;
-		TXbuf[4] = Par.Time5 & 0x00FF;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
-	}break;	
-		
-	case ADDR_TIME6:{
-		TXbuf[3] = (Par.Time6>>8) & 0x00FF;
-		TXbuf[4] = Par.Time6 & 0x00FF;
-		addCRC16(TXbuf,5); //ToDo
-		TXn=7;
-	}break;	
-	
+	case 1:{
+		if(TXbuf[4] == 0xFF)
+			Par.Sod--;
+	} break;
 
 	default:
 		mb_exception_rsp(data[1],0x02);
 		return;
 	}
 
-	TXi=0;
-	TXn++;
-	MDR_PORTE->RXTX |= (1<<6);//MDR_PORTE->RXTX &= ~(1<<6);//PORT_SetBits(MDR_PORTE,6);
-	UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
+	send_msg(6);
 }
 
 
@@ -142,81 +119,43 @@ void MB_F10(unsigned char *data, unsigned char n)
 	uint16_t addr=0;
 	uint16_t quantity=0;
 	uint8_t count=0;
-	
-	TXbuf[2] = data[2]; 	//starting address
-	TXbuf[3] = data[3];	//starting address
+	uint8_t i=0;
 	addr = data[3] + (data[2] << 8);
-	
-	TXbuf[4] = data[4]; 	//quantity of registers
-	TXbuf[5] = data[5];	//quantity of registers	
 	quantity = data[5] + (data[4] << 8);
-	
 	count = data[6];
 	
 	if((quantity==0)||(quantity>0x007B)||(count>2))  // больше 4 байт не работает
-		mb_exception_rsp(data[1],0x03); //many registrs
+		mb_exception_rsp(data[1],0x03); //more registrs
 	
-	switch (addr)
-	{
-
-	case ADDR_MYFLOAT:{
-		memcpy(&Par.myFloat,&data[7],4);
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	}break;
-
-	case ADDR_TIME1:{
-		Par.Time1 = data[8] + (data[7] << 8);
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	}break;	
-
-	case ADDR_TIME2:{
-		Par.Time2 = data[8] + (data[7] << 8);
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	}break;	
-	
-	case ADDR_TIME3:{
-		Par.Time3 = data[8] + (data[7] << 8);
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	}break;	
-		
-	case ADDR_TIME4:{
-		Par.Time4 = data[8] + (data[7] << 8);
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	}break;	
-		
-	case ADDR_TIME5:{
-		Par.Time5 = data[8] + (data[7] << 8);
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	}break;	
-		
-	case ADDR_TIME6:{
-		Par.Time6 = data[8] + (data[7] << 8);
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	}break;	
-	
-	default:
-		mb_exception_rsp(0x10,0x02);
-		return;
+	for(i=2;i<=5;i++){
+		TXbuf[i] = data[i];
 	}
+	
+	for(i=0;i<count;i+=2){
+		Par.bbuf[addr+i+1] = RXbuf[7+i];
+		Par.bbuf[addr+i] = RXbuf[7+i+1];
+	}
+	
+	writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
+	
+	send_msg(6);
 
-	addCRC16(TXbuf,6); //ToDo
-	TXn=8;
-	TXn++;
-	TXi=0;
-	MDR_PORTE->RXTX |= (1<<6);//MDR_PORTE->RXTX &= ~(1<<6);//MDR_PORTE->RXTX |= (1<<6);//PORT_SetBits(MDR_PORTE,6);
-	UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
 }
+
 
 void mb_exception_rsp(unsigned char func, unsigned char code)
 {
 	TXbuf[0] = MY_MODBUS_ADR;
 	TXbuf[1] = func|0x80;   
 	TXbuf[2] = code;   //error code (illegal data address)
-	addCRC16(TXbuf,3); //ToDo
-	TXn=5;
-	TXn++;
-	TXi=0;	
-	MDR_PORTE->RXTX |= (1<<6);//MDR_PORTE->RXTX &= ~(1<<6);//MDR_PORTE->RXTX |= (1<<6);//PORT_SetBits(MDR_PORTE,6);
-	UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
+	send_msg(3);
 }
 
+static void send_msg(unsigned char n)
+{
+	addCRC16(TXbuf,n); //ToDo
+	TXi=0;
+	TXn=n+3;
+	DOT4_PORT->RXTX |= (1<<DOT4_PIN);//PORT_SetBits(DOT4_PORT,DOT4_PIN);//MDR_PORTE->RXTX |= (1<<6);//MDR_PORTE->RXTX &= ~(1<<6);//PORT_SetBits(MDR_PORTE,6);
+	UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
+}

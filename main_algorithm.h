@@ -2,6 +2,7 @@
 #define	MAIN_ALGORITHM_H
 
 extern volatile unsigned char soderjanie;
+extern volatile unsigned int time_code;
 
 void loopStart(void);
 void loopStop(void);

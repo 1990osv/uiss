@@ -8,9 +8,6 @@
 
 void CPU_init (void)
 { // 80 MHz
-  //MDR_RST_CLK->HS_CONTROL = 0x01; /* вкл. HSE осцилятора */
-  //while ((MDR_RST_CLK->CLOCK_STATUS & (1 << 2)) == 0x00); 
-
 	RST_CLK_HSEconfig(RST_CLK_HSE_ON);
 	while(RST_CLK_HSEstatus()!=SUCCESS){
 	}/* ждем пока HSE выйдет в рабочий режим */
@@ -18,34 +15,24 @@ void CPU_init (void)
 	RST_CLK_PCLKcmd(RST_CLK_PCLK_EEPROM, ENABLE);	
 	EEPROM_SetLatency(EEPROM_Latency_3);
 	
-  MDR_RST_CLK->PLL_CONTROL = ((1 << 2) | (9 << 8)); //вкл. PLL | коэф. умножения = 10
-  while((MDR_RST_CLK->CLOCK_STATUS & 0x02) != 0x02); //ждем когда PLL выйдет в раб. режим
+	MDR_RST_CLK->PLL_CONTROL = ((1 << 2) | (9 << 8)); //вкл. PLL | коэф. умножения = 10
+	while((MDR_RST_CLK->CLOCK_STATUS & 0x02) != 0x02); //ждем когда PLL выйдет в раб. режим
 
-  MDR_RST_CLK->CPU_CLOCK = (2 /*источник для CPU_C1*/
-  | (1 << 2) /*источник для CPU_C2*/
-  | (0 << 4) /*предделитель для CPU_C3*/
-  | (1 << 8));/*источник для HCLK*/
-	
-
-//}
-//	//8 MHz
-//  MDR_RST_CLK->HS_CONTROL = 0x01; /* вкл. HSE осцилятора */
-//  while ((MDR_RST_CLK->CLOCK_STATUS & (1 << 2)) == 0x00); /* ждем пока HSE выйдет в рабочий режим */
-
-//  MDR_RST_CLK->CPU_CLOCK = (2 /*источник для CPU_C1*/
-//  | (0 << 2) /*источник для CPU_C2*/
-//  | (0 << 4) /*предделитель для CPU_C3*/
-//  | (1 << 8));/*источник для HCLK*/
+	MDR_RST_CLK->CPU_CLOCK = (2 /*источник для CPU_C1*/
+	| (1 << 2) /*источник для CPU_C2*/
+	| (0 << 4) /*предделитель для CPU_C3*/
+	| (1 << 8));/*источник для HCLK*/
 }
+
 void Init_All_Ports(void)
 {
 	PORT_InitTypeDef PORT_InitStructure;
-	//PORT_InitTypeDef PORTA_InitStructure;
+	PORT_InitTypeDef PORTA_InitStructure;
 	//PORT_InitTypeDef PORTB_InitStructure;
 	PORT_InitTypeDef PORTC_InitStructure;
 	//PORT_InitTypeDef PORTD_InitStructure;
 	PORT_InitTypeDef PORTE_InitStructure;
-	//PORT_InitTypeDef PORTF_InitStructure;
+	PORT_InitTypeDef PORTF_InitStructure;
 
 	/* Enable the RTCHSE clock on all ports */
 	RST_CLK_PCLKcmd(ALL_PORTS_CLK, ENABLE);
@@ -61,8 +48,21 @@ void Init_All_Ports(void)
 	RST_CLK_PCLKcmd(ALL_PORTS_CLK, DISABLE);
 	
 	
-	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTB |RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTE, ENABLE);
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTE | RST_CLK_PCLK_PORTF, ENABLE);
 
+	/* Configure PORTA */
+	PORTA_InitStructure.PORT_Pin	= (PORT_Pin_All);
+	PORTA_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+	PORTA_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+	PORTA_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+	PORTA_InitStructure.PORT_OE	= PORT_OE_IN;		//направление - вход
+	PORTA_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+	PORTA_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+	PORTA_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PORTA_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PORTA_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTA, &PORTA_InitStructure);
+	
 	/* Configure PORTC */
 	PORTC_InitStructure.PORT_Pin	= (DOT8_PIN_C | DOT9_PIN_C);
 	PORTC_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
@@ -77,7 +77,7 @@ void Init_All_Ports(void)
 	PORT_Init(MDR_PORTC, &PORTC_InitStructure);
 	
 	/* Configure PORTE */
-	PORTE_InitStructure.PORT_Pin	= (DOT4_PIN_E | DOT5_PIN_E);
+	PORTE_InitStructure.PORT_Pin	= (DOT4_PIN_E | DOT5_PIN_E | START_PIN_E);
 	PORTE_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
 	PORTE_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
 	PORTE_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
@@ -89,21 +89,23 @@ void Init_All_Ports(void)
 	PORTE_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
 	PORT_Init(MDR_PORTE, &PORTE_InitStructure);
 	
-//	/* Configure PORTB */
-//	PORTB_InitStructure.PORT_Pin	= (DE_PIN_B);
-//	PORTB_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
-//	PORTB_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
-//	PORTB_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
-//	PORTB_InitStructure.PORT_OE	= PORT_OE_OUT;		//направление - выход
-//	PORTB_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
-//	PORTB_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
-//	PORTB_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
-//	PORTB_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
-//	PORTB_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
-//	PORT_Init(MDR_PORTB, &PORTB_InitStructure);	
+	/* Configure PORTF */
+	PORTF_InitStructure.PORT_Pin	= (WR_PIN_F | RESDAT_PIN_F | DT_PIN_F | RZ_PIN_F);
+	PORTF_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+	PORTF_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+	PORTF_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+	PORTF_InitStructure.PORT_OE	= PORT_OE_OUT;		//направление - выход
+	PORTF_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+	PORTF_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+	PORTF_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PORTF_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PORTF_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTF, &PORTF_InitStructure);
 	
-
 }
+
+
+
 
 
 void Timer_Init(void){
@@ -165,7 +167,7 @@ void Uart1_Init(void)
 	/* Set the HCLK division factor = 16 for UART1*/
 	UART_BRGInit(MDR_UART1, UART_HCLKdiv16);
 
-	NVIC_SetPriority(UART1_IRQn,2);	
+	NVIC_SetPriority(UART1_IRQn,5);	
 	NVIC_EnableIRQ(UART1_IRQn);
 
 	UART_InitStructure.UART_BaudRate                = 9600;

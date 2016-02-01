@@ -37,23 +37,28 @@ static uint8_t i = 0;
 void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
-
 	Par.Sod		= 0;		//содержание связующего
 	Par.Time1	= 750;  	// стартовый импульс 7.5 us
 	Par.Time2	= 2400; 	// мертвое время 24 us
 	Par.Time3	= 3600; 	// ожидание 36 us
 	Par.Time4	= 500;		// строб 5 us
-	Par.Time5	= 11500;	// общее время ? реально ~120 us
-	Par.Time6	= 175;		// смещение 1.75 us
-	Par.myFloat	= 10;
+	Par.Time5	= 12000;	// общее время 120 us
+	Par.Time6	= 244;		// смещение 2.5 us
+	Par.timeCod	= 10;
 	__disable_irq();
 	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);
 	for(i = 0; i < PARAMETRS_CNT; i++){
 		if(ptr[i] != 0xFFFFFFFF){
-			EEPROM_ProgramWord(Address + i * 4, EEPROM_Main_Bank_Select, ptr[i]);
+			EEPROM_ProgramWord(
+				Address + i * 4, 
+				EEPROM_Main_Bank_Select, 
+				ptr[i]);
 		}
 		else{
-			EEPROM_ProgramWord(Address + i * 4, EEPROM_Main_Bank_Select, 0x00000000);		
+			EEPROM_ProgramWord(
+				Address + i * 4, 
+				EEPROM_Main_Bank_Select, 
+				0x00000000);		
 		}
 	}
 	__enable_irq();
@@ -78,31 +83,20 @@ static uint8_t i = 0;
 int main(void)
 {
 	CPU_init();
-	//dbg_print("Hello world!");	
-	
 	readParamToRAM(PARAMETRS_ADDR,Par.BUF);
-	
 	GTimers_Init();
 	GTimer_Run(REG_GTIMER);
-
 	Init_All_Ports();
-	
 	Timer_Init();
 	SysTick_Config(GLOBAL_CPU_CLOCK / 10); // 80 MHz -> 0.1 sec
-
 	Uart1_Init();
 	RXn = 0;
-
 	while(1){
-		
-		if (GTimer_Get(MB_GTIMER) >= 100){  //10ms
-			//if(GetStatus()!=MB_COMPLETE)
+		if (GTimer_Get(MB_GTIMER) >= 30){  //3ms
 			razbor(RXbuf, RXn);
 			RXn = 0;
 			GTimer_Stop(MB_GTIMER);
 		}
-		///!!!!!!!!!!!!!!FLASH_PROG_FREQ_MHZ ->>>> 8.0 
-
 	}
 }
 

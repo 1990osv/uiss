@@ -3,6 +3,10 @@
 
 #define MY_MODBUS_ADR	0x10
 
+#define SWITCH_SEND_MODE	DOT4_PORT->RXTX |= (1<<DOT4_PIN);
+#define SWITCH_READ_MODE	DOT4_PORT->RXTX &= ~(1<<DOT4_PIN);
+
+
 enum mbStatus
 {
 	MB_COMPLETE=0,

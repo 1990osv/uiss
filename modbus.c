@@ -1,4 +1,3 @@
-
 #include <string.h>
 
 #include "global.h"
@@ -6,6 +5,9 @@
 #include "crc16.h"
 #define false 	0x00
 #define	true	~false
+
+
+
 
 static volatile unsigned char status=MB_COMPLETE;
 
@@ -42,10 +44,10 @@ unsigned char razbor(unsigned char *data, unsigned char n)
 	
 	TXbuf[1] = data[1]; //function code   
 	
-//	if(data[1]==0x01){
-//		MB_F01(data,n);
-//	}	
-//	else 
+	if(data[1]==0x01){
+		MB_F01(data,n);
+	}	
+	else 
 	if(data[1]==0x03){
 		MB_F03(data,n);
 	}	
@@ -98,9 +100,8 @@ void MB_F03(unsigned char *data, unsigned char n)
 	if(addr+count>PARAMETRS_CNT*4){
 		mb_exception_rsp(data[1],0x02);	
 	}
-	
-	TXbuf[2] = count;
 
+	TXbuf[2] = count;
 	for(i=0;i<count;i+=2){
 		TXbuf[3+i] = Par.bbuf[addr+i+1];
 		TXbuf[3+i+1] = Par.bbuf[addr+i];
@@ -124,26 +125,29 @@ void MB_F05(unsigned char *data, unsigned char n)
 	switch (addr)
 	{
 	case 0:{
-		if(TXbuf[4] == 0xFF)
+		if(TXbuf[4] == 0xFF){
 			Par.bSod++;
+		}
 	} break;
 	
 	case 1:{
-		if(TXbuf[4] == 0xFF)
+		if(TXbuf[4] == 0xFF){
 			Par.bSod--;
+		}
 	} break;
 
 	case 2:{
-		if(TXbuf[4] == 0xFF)
+		if(TXbuf[4] == 0xFF){
 			sod_init(); //сброс счетчика усреднения
 			sod_begin_init=1;
+		}
 	} break;
 	
-	default:
+	default:{
 		mb_exception_rsp(data[1],0x02);
 		return;
 	}
-
+	}
 	send_msg(6);
 }
 
@@ -187,9 +191,9 @@ void mb_exception_rsp(unsigned char func, unsigned char code)
 
 static void send_msg(unsigned char n)
 {
-	addCRC16(TXbuf,n); //ToDo
+	addCRC16(TXbuf,n);
 	TXi=0;
 	TXn=n+3;
-	DOT4_PORT->RXTX |= (1<<DOT4_PIN);//PORT_SetBits(DOT4_PORT,DOT4_PIN);//MDR_PORTE->RXTX |= (1<<6);//MDR_PORTE->RXTX &= ~(1<<6);//PORT_SetBits(MDR_PORTE,6);
+	SWITCH_SEND_MODE;//DOT4_PORT->RXTX |= (1<<DOT4_PIN);
 	UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
 }

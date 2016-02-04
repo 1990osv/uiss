@@ -9,6 +9,7 @@
 
 static volatile unsigned char status=MB_COMPLETE;
 
+static void MB_F01(unsigned char *data, unsigned char n);
 static void MB_F03(unsigned char *data, unsigned char n);
 static void MB_F05(unsigned char *data, unsigned char n);
 static void MB_F10(unsigned char *data, unsigned char n);
@@ -41,7 +42,10 @@ unsigned char razbor(unsigned char *data, unsigned char n)
 	
 	TXbuf[1] = data[1]; //function code   
 	
-	
+//	if(data[1]==0x01){
+//		MB_F01(data,n);
+//	}	
+//	else 
 	if(data[1]==0x03){
 		MB_F03(data,n);
 	}	
@@ -56,6 +60,31 @@ unsigned char razbor(unsigned char *data, unsigned char n)
 		return MB_FUNCTION_ERR;
 	}
 	return MB_COMPLETE;
+}
+
+void MB_F01(unsigned char *data, unsigned char n)
+{
+	uint16_t addr=0;
+	
+	TXbuf[1]=data[1];
+	TXbuf[2]=1;	//byte count
+
+	addr = data[3]+(data[2]<<8);
+
+	switch (addr)
+	{
+	case 0:{
+		TXbuf[3] = Par.boolean>>8;
+		//TXbuf[4] = time_code & 0x00FF;
+			
+	} break;
+	
+	default:
+		mb_exception_rsp(data[1],0x02);
+		return;
+	}
+
+	send_msg(4);
 }
 
 void MB_F03(unsigned char *data, unsigned char n)
@@ -84,12 +113,11 @@ void MB_F03(unsigned char *data, unsigned char n)
 void MB_F05(unsigned char *data, unsigned char n)
 {
 	uint16_t addr=0;
+	uint8_t i;
 	
-	TXbuf[1]=data[1];
-	TXbuf[2]=data[2];
-	TXbuf[3]=data[3];
-	TXbuf[4]=data[4];
-	TXbuf[5]=data[5];
+	for(i=1;i<=5;i++){
+		TXbuf[i] = data[i];
+	}
 
 	addr = data[3]+(data[2]<<8);
 
@@ -97,14 +125,20 @@ void MB_F05(unsigned char *data, unsigned char n)
 	{
 	case 0:{
 		if(TXbuf[4] == 0xFF)
-			Par.Sod++;
+			Par.bSod++;
 	} break;
 	
 	case 1:{
 		if(TXbuf[4] == 0xFF)
-			Par.Sod--;
+			Par.bSod--;
 	} break;
 
+	case 2:{
+		if(TXbuf[4] == 0xFF)
+			sod_init(); //сброс счетчика усреднения
+			sod_begin_init=1;
+	} break;
+	
 	default:
 		mb_exception_rsp(data[1],0x02);
 		return;
@@ -136,8 +170,8 @@ void MB_F10(unsigned char *data, unsigned char n)
 		Par.bbuf[addr+i] = RXbuf[7+i+1];
 	}
 	
-	writeParamToROM(PARAMETRS_ADDR,Par.BUF);  //WRITE TO ROM
-	
+	writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
+	update_state_time();				//Обновление времени срабатывания таймеров
 	send_msg(6);
 
 }

@@ -30,7 +30,7 @@ void Init_All_Ports(void)
 	PORT_InitTypeDef PORTA_InitStructure;
 	//PORT_InitTypeDef PORTB_InitStructure;
 	PORT_InitTypeDef PORTC_InitStructure;
-	//PORT_InitTypeDef PORTD_InitStructure;
+	PORT_InitTypeDef PORTD_InitStructure;
 	PORT_InitTypeDef PORTE_InitStructure;
 	PORT_InitTypeDef PORTF_InitStructure;
 
@@ -48,7 +48,9 @@ void Init_All_Ports(void)
 	RST_CLK_PCLKcmd(ALL_PORTS_CLK, DISABLE);
 	
 	
-	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTE | RST_CLK_PCLK_PORTF, ENABLE);
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTA | RST_CLK_PCLK_PORTB | 
+			RST_CLK_PCLK_PORTC | RST_CLK_PCLK_PORTD | 
+			RST_CLK_PCLK_PORTE | RST_CLK_PCLK_PORTF, ENABLE);
 
 	/* Configure PORTA */
 	PORTA_InitStructure.PORT_Pin	= (PORT_Pin_All);
@@ -75,6 +77,31 @@ void Init_All_Ports(void)
 	PORTC_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
 	PORTC_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
 	PORT_Init(MDR_PORTC, &PORTC_InitStructure);
+	
+	PORTC_InitStructure.PORT_Pin	= (DATA15_PIN_C);
+	PORTC_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+	PORTC_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+	PORTC_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+	PORTC_InitStructure.PORT_OE	= PORT_OE_IN;		//направление - выход
+	PORTC_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+	PORTC_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+	PORTC_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PORTC_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PORTC_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTC, &PORTC_InitStructure);
+	
+	/* Configure PORTD */
+	PORTD_InitStructure.PORT_Pin	= (PORT_Pin_All);
+	PORTD_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+	PORTD_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+	PORTD_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+	PORTD_InitStructure.PORT_OE	= PORT_OE_IN;		//направление - вход
+	PORTD_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+	PORTD_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+	PORTD_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PORTD_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PORTD_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTD, &PORTD_InitStructure);
 	
 	/* Configure PORTE */
 	PORTE_InitStructure.PORT_Pin	= (DOT4_PIN_E | DOT5_PIN_E | START_PIN_E);

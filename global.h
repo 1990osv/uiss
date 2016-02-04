@@ -18,7 +18,7 @@
 
 #define GLOBAL_CPU_CLOCK 	80000000
 
-#define PARAMETRS_CNT		20
+#define PARAMETRS_CNT		30
 #define PARAMETRS_ADDR		0x08010000
 
 #define ADDR_SODER		1
@@ -48,7 +48,7 @@ extern uint16_t Soder;
 union __all {
 	struct {
 					//address
-		unsigned int Sod;	//0
+			 int Sod;	//0
 		unsigned int Time1;	//4
 		unsigned int Time2;	//8	
 		unsigned int Time3;	//12
@@ -56,6 +56,17 @@ union __all {
 		unsigned int Time5;	//20
 		unsigned int Time6;	//24
 		unsigned int timeCod;	//28
+		unsigned int timeCodA;	//32
+			 int bSpeed;	//36
+		unsigned int AcBase;	//40
+		unsigned int SmSpeed;	//44
+		unsigned int cSpeed;	//48
+			 int bSod;	//52
+		unsigned char boolean;	//54
+		
+		
+					//<46!!!!!!! 50
+		
 	};
 	uint32_t BUF[PARAMETRS_CNT];
 	uint8_t	bbuf[PARAMETRS_CNT * 4];

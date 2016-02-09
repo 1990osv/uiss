@@ -1,9 +1,7 @@
 #ifndef TIMERS_H
 #define TIMERS_H
 
-
-
-#define REG_GTIMER    0
+#define DAC_GTIMER    0
 #define MB_GTIMER     1
 
 #define MAX_GTIMERS  2

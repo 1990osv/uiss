@@ -8,18 +8,22 @@
 #include "MDR32F9Qx_uart.h"
 #include "MDR32F9Qx_timer.h"
 #include "MDR32F9Qx_eeprom.h"
+#include "MDR32F9Qx_dac.h"
 
+#include "sort.h"
 #include "init.h"
 #include "timers.h"
 #include "main_algorithm.h"
 #include "modbus.h"
 #include "ports.h"
+
+
 #include <stdio.h>
 
 #define GLOBAL_CPU_CLOCK 	80000000
 
 #define PARAMETRS_CNT		30
-#define PARAMETRS_ADDR		0x08010000
+#define PARAMETRS_ADDR		0x08019000
 
 #define ADDR_SODER		1
 
@@ -77,5 +81,16 @@ extern union __all Par;
 void readParamToRAM(uint32_t Address, uint32_t *ptr);
 void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr);
 void writeParamToROM(uint32_t Address, uint32_t *ptr);
-	
+
+
+//unsigned int mabs(int a)
+//{
+//	if (a > 0){
+//		return a;
+//	}
+//	else{
+//		return a*(-1);
+//	}
+//}
+
 #endif

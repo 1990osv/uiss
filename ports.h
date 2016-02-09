@@ -5,6 +5,10 @@
 #define ADC_PIN			7
 #define ADC_PORT		MDR_PORTD
 
+#define DAC_PIN_E		PORT_Pin_0
+#define DAC_PIN			0
+#define DAC_PORT		MDR_PORTE
+
 #define DEF_PIN_E		PORT_Pin_2
 #define DEF_PIN			2
 #define DEF_PORT		MDR_PORTE

@@ -6,8 +6,11 @@
                        RST_CLK_PCLK_PORTE | RST_CLK_PCLK_PORTF)
 
 
-void CPU_init (void)
+void HSE_80MHz_init (void)
 { // 80 MHz
+
+
+
 	RST_CLK_HSEconfig(RST_CLK_HSE_ON);
 	while(RST_CLK_HSEstatus()!=SUCCESS){
 	}/* ждем пока HSE выйдет в рабочий режим */
@@ -131,11 +134,27 @@ void Init_All_Ports(void)
 	
 }
 
+void mDAC_Init(void)
+{
+ 	PORT_InitTypeDef PORT_InitStructure; 
+	PORT_InitStructure.PORT_Pin   = DAC_PIN_E;
+	PORT_InitStructure.PORT_OE    = PORT_OE_OUT;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_ANALOG;
+	PORT_Init(MDR_PORTE, &PORT_InitStructure);
+	
+	RST_CLK_PCLKcmd(RST_CLK_PCLK_DAC,ENABLE);
+	
+	  /* ADC Configuration */
+	/* Reset all ADC settings */
+	DAC_DeInit();
+	/* DAC channel2 Configuration */
+	DAC2_Init(DAC2_AVCC);
+	/* DAC channel2 Configuration */
+	DAC2_Cmd(ENABLE);
+	
+}
 
-
-
-
-void Timer_Init(void){
+void Tim1_Tim2_Init(void){
 	MDR_RST_CLK->PER_CLOCK |= 1 << 14; //разрешение тактирования Таймера 1
 	MDR_RST_CLK->PER_CLOCK |= 1 << 15; //разрешение тактирования Таймера 2
 	MDR_RST_CLK->TIM_CLOCK = (
@@ -156,7 +175,6 @@ void Timer_Init(void){
 
 	NVIC_SetPriority(Timer2_IRQn,1);
 	NVIC_EnableIRQ(Timer2_IRQn);
-
 
 }
 
@@ -209,7 +227,6 @@ void Uart1_Init(void)
 	/* Configure DMA for UART1 */
 	UART_DMAConfig (MDR_UART1, UART_IT_FIFO_LVL_12words, UART_IT_FIFO_LVL_12words);
 	UART_DMACmd(MDR_UART1, UART_DMA_TXE | UART_DMA_RXE | UART_DMA_ONERR, ENABLE);
-
 
 	/* Enable transmitter interrupt (UARTTXINTR) */
 	UART_ITConfig (MDR_UART1, UART_IT_TX, ENABLE);

@@ -3,6 +3,7 @@
 
 extern volatile unsigned char sod_begin_init;
 extern volatile unsigned char sod_first_start;
+extern volatile unsigned char send_raw_data;
 extern volatile unsigned int time_code;
 
 void loopStart(void);

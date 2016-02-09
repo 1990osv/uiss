@@ -6,9 +6,6 @@
 #define false 	0x00
 #define	true	~false
 
-
-
-
 static volatile unsigned char status=MB_COMPLETE;
 
 static void MB_F01(unsigned char *data, unsigned char n);
@@ -97,16 +94,27 @@ void MB_F03(unsigned char *data, unsigned char n)
 	count = data[5]*2; //registrs count
 	addr = data[3]+(data[2]<<8);
 	
-	if(addr+count>PARAMETRS_CNT*4){
-		mb_exception_rsp(data[1],0x02);	
-	}
-
 	TXbuf[2] = count;
-	for(i=0;i<count;i+=2){
-		TXbuf[3+i] = Par.bbuf[addr+i+1];
-		TXbuf[3+i+1] = Par.bbuf[addr+i];
-	}
 
+	if (addr>=200){	
+		addr-=200;
+		TXbuf[3] = im[addr]>>8;
+		TXbuf[3+1] = im[addr]&0xff;	
+	}
+	else if(addr>=100){
+		addr-=100;
+		TXbuf[3] = m[addr]>>8;
+		TXbuf[3+1] = m[addr]&0xff;	
+	}
+	else{
+		if(addr+count>PARAMETRS_CNT*4){
+			mb_exception_rsp(data[1],0x02);	
+		}
+		for(i=0;i<count;i+=2){
+			TXbuf[3+i] = Par.bbuf[addr+i+1];
+			TXbuf[3+i+1] = Par.bbuf[addr+i];
+		}
+	}
 	send_msg(3+count);
 }
 
@@ -138,8 +146,15 @@ void MB_F05(unsigned char *data, unsigned char n)
 
 	case 2:{
 		if(TXbuf[4] == 0xFF){
-			sod_init(); //сброс счетчика усреднения
+			sod_init(); 
 			sod_begin_init=1;
+		}
+	} break;
+	
+	case 3:{
+		if(TXbuf[4] == 0xFF){	
+			sod_init(); 
+			send_raw_data=1; 
 		}
 	} break;
 	

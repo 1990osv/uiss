@@ -1,39 +1,15 @@
-#ifndef __SORT_H
-#define __SORT_H
+#ifndef SORT_H
+#define SORT_H
 
-#define SWAP(A, B) { int t = A; A = B; B = t; } //меняет местами
+#define SWAP(A, B) {unsigned int t = A; A = B; B = t; } //меняет местами
 
-/*быстрая сортировка
-*/
-void qs(unsigned int* s_arr, int first, int last) //n - количество элементов
-{
-    int i = first, j = last, x = s_arr[(first + last) / 2];
+#define SIZE_D  20			// максимальное количество диапазонов
+extern unsigned int im[SIZE_D];		// массив с подсчетами
+extern unsigned int m[SIZE_D];		// массив с диапазонами (хранит только начало диапазона)
 
-    do {
-        while (s_arr[i] < x) i++;
-        while (s_arr[j] > x) j--;
+void qs(unsigned int* s_arr, int first, int last);
+int average(unsigned int* s_arr, unsigned char n);
+unsigned int my_filter(unsigned int * arr, unsigned int data_size, unsigned int step);
 
-        if(i <= j) {
-            if (s_arr[i] > s_arr[j]) SWAP(s_arr[i], s_arr[j]);
-            i++;
-            j--;
-        }
-    } while (i <= j);
 
-    if (i < last)
-        qs(s_arr, i, last);
-    if (first < j)
-        qs(s_arr, first, j);
-}
-
-int average(unsigned int* s_arr, unsigned char n) //n - количество элементов
-{
-	unsigned char i;
-	long summ=0;
-	
-	for (i = 0; i < n; i++){
-		summ += s_arr[i];	
-	}
-	return summ/n;
-}
 #endif

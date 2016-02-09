@@ -140,13 +140,6 @@ void SysTick_Handler(void)
 {
 	loopStart();
 	MDR_PORTC->RXTX ^= (1<<1);
-	
-//	MDR_PORTE->RXTX ^= (1<<6);
-//	MDR_PORTE->RXTX ^= (1<<7);
-//	DOT4_PORT->RXTX ^=(DOT4_PIN_E<<1);
-	
-
-	
 }
 /*******************************************************************************
 * Function Name  : CAN1_IRQHandler
@@ -210,12 +203,8 @@ void UART1_IRQHandler(void)
 			UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
 		}
 		else if(TXn==TXi){
-			//MDR_PORTE->RXTX &= ~(1<<6);//MDR_PORTE->RXTX |= (1<<6);
-			DOT4_PORT->RXTX &= ~(1<<DOT4_PIN);
-			//PORT_ResetBits(DOT4_PORT,DOT4_PIN);
+			SWITCH_READ_MODE;//DOT4_PORT->RXTX &= ~(1<<DOT4_PIN);
 		}
-
-
 	}
 	
 }

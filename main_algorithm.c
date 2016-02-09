@@ -1,24 +1,27 @@
 #include "global.h"
-#include "sort.h"
 
-#define STORE_SIZE	50
-#define IMPULSE_ZAP	25E-9	//величина такта счетчика 
-				//ПЛИС =25E-9
 
-volatile unsigned int time_code=0; //*25 ns - время от ПЛИС
-volatile unsigned int btime_code=0; //*25 ns - время от ПЛИС
-volatile unsigned char new_time_code=0; // получен новый код
-volatile unsigned char count_time_code=0; // счетчик
+#define FALSE_DATA	(DATA15_PORT->RXTX & DATA15_PIN)
+
+#define STORE_SIZE	50	//величина буфера для обработки
+#define IMPULSE_ZAP	25E-9	//величина импульса заполнения 
+				//ПЛИС =25E-9 секунд , 40 MHz
+
+volatile unsigned int 	time_code=0; 		//*25 ns - время от ПЛИС
+volatile unsigned int 	btime_code=0; 		//*25 ns - время от ПЛИС в сухом материале	
+volatile unsigned char 	new_time_code=0; 	// флаг получения новыго кода
+volatile unsigned int 	count_time_code=0; 	// счетчик полученных кодов
 
 unsigned int store[STORE_SIZE]; //массив кодов
 	
-volatile double speed,speed_begin,speed_smol;
-volatile double deadtime;
-volatile double time;
-volatile int sod;
+volatile double speed,speed_begin,speed_smol;	//скорости текущая, начальная, в смоле
+volatile double deadtime;			// мертвое время вычитаемое из time_code
+volatile double time;				// время прохождения сигнала в секундах
+volatile int sod;				// расчитанное содержание связующего
 
-volatile unsigned char sod_begin_init=0;
+volatile unsigned char sod_begin_init=0;	// флаг начальной установки по команде
 volatile unsigned char sod_first_start=0;
+volatile unsigned char send_raw_data=0;		// флаг отправки сырых данных
 
 volatile unsigned char status=0; // автомат отсчета времени
 volatile unsigned int state_time[5]; // временные задержки автомата
@@ -89,7 +92,7 @@ void query(void){
 		status++;
 	} break;
 	case 3 :{
-		RESDAT_PORT->RXTX &= ~(1<<RESDAT_PIN);
+		
 		START_PORT->RXTX &= ~(1<<START_PIN);
 		MDR_TIMER2->ARR = state_time[1];		
 		status++;		
@@ -102,7 +105,7 @@ void query(void){
 	} break;	
 	case 5 :{
 		DT_PORT->RXTX &= ~(1<<DT_PIN);	
-		
+		RESDAT_PORT->RXTX &= ~(1<<RESDAT_PIN);
 		MDR_TIMER2->ARR = state_time[3];
 		status++;
 	} break;	
@@ -117,31 +120,42 @@ void query(void){
 	}
 }
 
-unsigned int mabs(int a)
+
+void debug_send_data(unsigned int * arr, unsigned int size)
 {
-	if (a > 0){
-		return a;
+static unsigned int i;
+	//while(status!=0); //ждем окончания цикла 
+	//__disable_irq();
+	for(i=0;i<size;i++){
+		ITM_SendChar((arr[i]>>8 )& 0xFF);
+		ITM_SendChar(arr[i] & 0xFF);	
+		ITM_SendChar(0xFF);
 	}
-	else{
-		return a*(-1);
-	}
-		
-	
+	//__enable_irq();	
 }
 
 char sod_raschet(void)
 {
-uint8_t i;
-	if(new_time_code && !(DATA15_PORT->RXTX & DATA15_PIN)){
+
+	if(new_time_code && !FALSE_DATA){
 		store[count_time_code++] = time_code;
 		
 		if(count_time_code >= STORE_SIZE){
-			qs(&store[0],0,STORE_SIZE-1);
-			/**/Par.timeCodA=average(&store[5],STORE_SIZE-10);
-			time = (double)Par.timeCodA*0.000025; //*1000  BASE mm
-			deadtime=(double) Par.Time2 /100000; //0.01 uS *1000  BASE mm
+			if(!send_raw_data){
+				qs(&store[0],0,STORE_SIZE-1);
+			}
+			else{
+				debug_send_data(store,STORE_SIZE);
+				send_raw_data=0;
+			}
 			
-			speed=(Par.AcBase ) / (time - deadtime);
+			/**/Par.timeCodA=my_filter(store,STORE_SIZE,10);
+		
+			deadtime=(double) Par.Time2 /100000; //0.01 uS *1000 cause BASE mm
+			
+			time = (double)Par.timeCodA*0.000025; //*1000  cause BASE mm
+			
+			speed=(Par.AcBase ) / (time);// - deadtime);
 			
 			/**/Par.cSpeed = speed;
 
@@ -150,21 +164,13 @@ uint8_t i;
 				sod = calc_sod(speed,speed_begin,speed_smol);
 				/**/Par.Sod = Par.bSod + sod;
 			}
-			else
-			{
+			else{
 				Par.Sod = 100;
 			}
 			if(sod_begin_init){
 				speed_begin = speed;
 				/**/Par.timeCod = Par.timeCodA;
 				/**/Par.bSpeed = speed_begin;
-				
-				for(i=0;i<STORE_SIZE;i++){
-					ITM_SendChar((store[i]>>8 )& 0xFF);
-					ITM_SendChar(store[i] & 0xFF);	
-					ITM_SendChar(0xFF);
-
-				}
 				sod_begin_init=0;
 			}
 			count_time_code=0;

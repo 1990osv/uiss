@@ -55,6 +55,9 @@ static uint8_t i = 0;
 	Par.SmSpeed	= 1500;		//скорость звука в смоле
 	Par.bSod	= 0;		//содержание связующего коррекция
 	
+	Par.PWMperiod	= 1500;
+	Par.PWMcnt	= 1;
+	
 	__disable_irq();
 	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);
 	for(i = 0; i < PARAMETRS_CNT; i++){
@@ -92,7 +95,7 @@ static uint8_t i = 0;
 	__enable_irq();
 }
 
-void validation_param()
+void validation_param(void)
 {
 	if((Par.Time1<500)||(Par.Time1>20000)){
 		Par.Time1	= 750;		// стартовый импульс 7.5 us

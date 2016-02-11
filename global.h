@@ -66,10 +66,8 @@ union __all {
 		unsigned int SmSpeed;	//44
 		unsigned int cSpeed;	//48
 			 int bSod;	//52
-		unsigned char boolean;	//54
-		
-		
-					//<46!!!!!!! 50
+		unsigned int PWMperiod;	//56
+		unsigned int PWMcnt;	//60
 		
 	};
 	uint32_t BUF[PARAMETRS_CNT];
@@ -81,7 +79,7 @@ extern union __all Par;
 void readParamToRAM(uint32_t Address, uint32_t *ptr);
 void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr);
 void writeParamToROM(uint32_t Address, uint32_t *ptr);
-
+void validation_param(void);
 
 //unsigned int mabs(int a)
 //{

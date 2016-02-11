@@ -24,8 +24,17 @@ volatile unsigned char sod_first_start=0;
 volatile unsigned char send_raw_data=0;		// флаг отправки сырых данных
 
 volatile unsigned char status=0; // автомат отсчета времени
-volatile unsigned int state_time[5]; // временные задержки автомата
+volatile unsigned int state_time[6]; // временные задержки автомата
 
+volatile unsigned char start_i=0, start_j=0;
+
+struct time{
+	unsigned int startWindth0;
+	unsigned int startWindth1;
+	unsigned int deadTime;
+	unsigned int strob;
+	unsigned int mainTime;
+} Times;
 
 void sod_init(void)
 {
@@ -47,11 +56,17 @@ void update_state_time(void)
 {
 	SysTick_Config(GLOBAL_CPU_CLOCK / Par.Time5); // 80 MHz -> 0.1 sec
 	
-	state_time[1] = (Par.Time1 - Par.Time6)*8/10;	// стартовый импульс 7.5 us
-	state_time[2] = (Par.Time2 - Par.Time6)*8/10;	// мертвое время 24 us
-	state_time[3] = (( 	Par.Time3 - 		// общее время 120 us
-				Par.Time2  )-Par.Time6)*8/10;
-	state_time[4] = (Par.Time4-Par.Time6)*8/10;	// строб 5 us
+//	state_time[1] = (Par.Time1 - Par.Time6)*8/10;			// стартовый импульс 7.5 us
+//	state_time[2] = (Par.Time2 - Par.Time6)*8/10;			// мертвое время 24 us
+//	state_time[3] = (Par.Time3 - Par.Time2  -Par.Time6)*8/10;	// общее время 120 us
+//	state_time[4] = (Par.Time4-Par.Time6)*8/10;			// строб 5 us
+//	state_time[5] = (Par.PWMperiod - Par.Time1 -Par.Time6)*8/10;	// период стартовых импульсов
+
+	Times.startWindth0 = (Par.Time1 - Par.Time6)*8/10;			// длительность стартовых импульсов 7.5 us
+	Times.startWindth1 = (Par.PWMperiod - Par.Time1 -Par.Time6)*8/10;	// время между стартовыми импульсами
+	Times.deadTime = (Par.Time2 - Par.Time6)*8/10;				// мертвое время 24 us 
+	Times.strob = (Par.Time4-Par.Time6)*8/10;				// строб 5 us
+	Times.mainTime =  (Par.Time3 - Par.Time2  -Par.Time6)*8/10;		// общее время 120 us
 }
 
 
@@ -72,12 +87,13 @@ void loopStop(void)
 	MDR_TIMER2->CNTRL = 0; /*счет вверх по TIM_CLK, таймер выкл.*/
 }
 
+
 void query(void){ 
 	MDR_PORTC->RXTX ^= (1<<0);
 	switch (status){
 	case 1 :{
 		WR_PORT->RXTX &= ~(1<<WR_PIN);
-		MDR_TIMER2->ARR = state_time[4];
+		MDR_TIMER2->ARR = Times.strob;// state_time[4];
 		status++;
 	} break;
 	case 2 :{
@@ -89,27 +105,44 @@ void query(void){
 		RESDAT_PORT->RXTX |= (1<<RESDAT_PIN);	
 		DT_PORT->RXTX |= (1<<DT_PIN);
 		MDR_TIMER2->ARR = 1;//state_time[4];		
+		start_i = 0;
+		start_j = 0;
 		status++;
 	} break;
 	case 3 :{
 		
-		START_PORT->RXTX &= ~(1<<START_PIN);
-		MDR_TIMER2->ARR = state_time[1];		
-		status++;		
+		if(start_i == 0){
+			START_PORT->RXTX &= ~(1<<START_PIN);
+			MDR_TIMER2->ARR = Times.startWindth0; // state_time[1];	// ToDo переделать на структуру state_time		
+			start_i = 1;
+			start_j++;
+		}
+		else{
+			START_PORT->RXTX |= (1<<START_PIN);
+			start_i = 0;
+			MDR_TIMER2->ARR = Times.startWindth1; // state_time[5];
+			if(start_j >= Par.PWMcnt){
+				status++;
+			}
+		}
+	
+		START_PORT->RXTX ^= (1<<START_PIN);
 	} break;	
 	case 4 :{
-		START_PORT->RXTX |= (1<<START_PIN);
+		
 		RZ_PORT->RXTX &= ~(1<<RZ_PIN);			
-		MDR_TIMER2->ARR = state_time[2];		
+		MDR_TIMER2->ARR = Times.deadTime; // state_time[2];		
 		status++;	
 	} break;	
 	case 5 :{
 		DT_PORT->RXTX &= ~(1<<DT_PIN);	
+		DOT5_PORT->RXTX &= ~(1<<DOT5_PIN);
 		RESDAT_PORT->RXTX &= ~(1<<RESDAT_PIN);
-		MDR_TIMER2->ARR = state_time[3];
+		MDR_TIMER2->ARR = Times.mainTime; // state_time[3];
 		status++;
 	} break;	
 	case 6 :{
+		DOT5_PORT->RXTX |= (1<<DOT5_PIN);	
 		RZ_PORT->RXTX |= (1<<RZ_PIN);
 		loopStop();
 	} break;

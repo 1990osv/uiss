@@ -73,7 +73,7 @@ void MB_F01(unsigned char *data, unsigned char n)
 	switch (addr)
 	{
 	case 0:{
-		TXbuf[3] = Par.boolean>>8;
+		//TXbuf[3] = Par.boolean>>8;
 		//TXbuf[4] = time_code & 0x00FF;
 			
 	} break;
@@ -188,7 +188,7 @@ void MB_F10(unsigned char *data, unsigned char n)
 		Par.bbuf[addr+i+1] = RXbuf[7+i];
 		Par.bbuf[addr+i] = RXbuf[7+i+1];
 	}
-	
+	validation_param();
 	writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	update_state_time();				//Обновление времени срабатывания таймеров
 	send_msg(6);

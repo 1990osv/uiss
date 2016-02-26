@@ -1,21 +1,17 @@
 #ifndef MODBUS_H
 #define MODBUS_H
 
+#define RX_BUFFER_SIZE	16
+#define TX_BUFFER_SIZE	16
+
 #define MY_MODBUS_ADR	0x10
 
 #define SWITCH_SEND_MODE	DOT4_PORT->RXTX |= (1<<DOT4_PIN);
 #define SWITCH_READ_MODE	DOT4_PORT->RXTX &= ~(1<<DOT4_PIN);
 
 
-enum mbStatus
-{
-	MB_COMPLETE=0,
-	MB_PROCESSING,
-	MB_ADDRESS_ERROR,
-	MB_FUNCTION_ERR
-};
-
-unsigned char GetStatus(void);
-unsigned char razbor(unsigned char *data, unsigned char n);
+void modbus_process(void);
+void modbus_TxInterrupt(void);
+void modbus_RxInterrupt(void);
 
 #endif

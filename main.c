@@ -1,28 +1,8 @@
 #include "global.h"
-volatile char SEC=0;
-volatile unsigned int temp;
-volatile unsigned int mytime=0;
-volatile unsigned int main_time=0;
-
-uint8_t RXbuf[16];
-uint8_t TXbuf[16];
-uint8_t RXn;
-uint8_t TXn,TXi;
-
-uint32_t i;
-
-//uint32_t RAMParam[PARAMETRS_CNT];
 
 union __all Par;
 
-uint16_t Soder;
 uint32_t dac_temp=0;
-
-
-//const unsigned char size = 20;	// максимальное количество диапазонов
-unsigned int im[SIZE_D];		// массив с подсчетами
-unsigned int m[SIZE_D];			// массив с диапазонами (хранит только начало диапазона)
-
 
 void readParamIntoRAM(uint32_t Address, uint32_t *ptr)
 {
@@ -97,7 +77,7 @@ static uint8_t i = 0;
 
 void validation_param(void)
 {
-	if((Par.Time1<500)||(Par.Time1>20000)){
+	if((Par.Time1<500)||(Par.Time1>2000)){
 		Par.Time1	= 750;		// стартовый импульс 7.5 us
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
@@ -113,11 +93,11 @@ void validation_param(void)
 		Par.Time4	= 500;		// строб 5 us
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
-	if((Par.Time5<10)||(Par.Time2>200)){
+	if((Par.Time5<10)||(Par.Time5>200)){
 		Par.Time5	= 50;		// частота опроса
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
-	if((Par.Time6<200)||(Par.Time6>1000)){
+	if((Par.Time6<100)||(Par.Time6>1000)){
 		Par.Time6	= 212;		// смещение 2.12 us 
 						// (среднее время выполнения прерывания от таймера)
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
@@ -126,7 +106,7 @@ void validation_param(void)
 		Par.AcBase	= 200; 		//акустическая база (мм)
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
-	if((Par.SmSpeed<1000)||(Par.SmSpeed>2000)){
+	if((Par.SmSpeed<500)||(Par.SmSpeed>2000)){
 		Par.SmSpeed	= 1500;		//скорость звука в смоле
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
@@ -141,12 +121,9 @@ void validation_param(void)
 
 }
 
-int main(void)
+
+void uncrash_delay(void)
 {
-	Init_All_Ports();
-	Tim1_Tim2_Init();
-	GTimers_Init();
-	GTimer_Run(DAC_GTIMER);
 	while(GTimer_Get(DAC_GTIMER) <= 2000){ //на частоте 8 MHz секундная задержка
 	}
 	GTimer_Reset(DAC_GTIMER);
@@ -155,6 +132,16 @@ int main(void)
 	}
 	GTimer_Reset(DAC_GTIMER);
 	MDR_PORTC->RXTX ^= (1<<1);	
+}
+
+int main(void)
+{
+	Init_All_Ports();
+	Tim1_Tim2_Init();
+	GTimers_Init();
+	GTimer_Run(DAC_GTIMER);
+	
+	uncrash_delay();
 
 	HSE_80MHz_init();
 	
@@ -165,102 +152,16 @@ int main(void)
 	
 	Uart1_Init();
 	mDAC_Init();
-	RXn = 0;
-	while(1){
-		if (GTimer_Get(MB_GTIMER) >= 30){  //3ms 
-			razbor(RXbuf, RXn);
-			RXn = 0;
-			GTimer_Stop(MB_GTIMER);
-		}
-		if (GTimer_Get(DAC_GTIMER) >= 10000){  //1000ms
+
+	while(true){
+		modbus_process();
+		sod_raschet();
+		if (GTimer_Get(DAC_GTIMER) >= 1000){  //100ms
 			DAC2_SetData(dac_temp++);
-			if(dac_temp>0x0FFF)dac_temp=0;
+			if(dac_temp>0x0FFF)
+				dac_temp=0;
 			GTimer_Reset(DAC_GTIMER);
 		}
-		
-		sod_raschet();
 	}
-	
 }
 
-/*быстрая сортировка
-*/
-void qs(unsigned int* s_arr, int first, int last) //n - количество элементов
-{
-int i = first, j = last, x = s_arr[(first + last) / 2];
-
-	do{
-		while (s_arr[i] < x) i++;
-		while (s_arr[j] > x) j--;
-
-		if(i <= j){
-			if (s_arr[i] > s_arr[j]) SWAP(s_arr[i], s_arr[j]);
-			i++;
-			j--;
-		}
-	} while (i <= j);
-	if (i < last)
-		qs(s_arr, i, last);
-	if (first < j)
-		qs(s_arr, first, j);
-}
-
-int average(unsigned int* s_arr, unsigned char n) //n - количество элементов
-{
-	unsigned char i;
-	long summ=0;
-	
-	for (i = 0; i < n; i++){
-		summ += s_arr[i];	
-	}
-	return summ/n;
-}
-
-
-/**
-  * @brief  Находит наиболее вероятное значение 
-  * @detailed Находит распределение диапазонов величины в массиве с заданным шагом.
-  * Находит какой диапазон самый распространенный. Определяет среднее значение в этом диапазоне.
-  * @param  arr: Массив с данными
-  * @param  data_size: Размер массива с данными
-  * @param  step: Шаг диапазонов
-  * @retval result: Наиболее вероятное значение
-  */
-unsigned int my_filter(unsigned int * arr, unsigned int data_size, unsigned int step)
-{
-
-	unsigned char i, j;
-//	unsigned int current;		// текущая точка в окрестностях которой делаем подсчет
-
-	unsigned int maxi,max;		
-	unsigned int result;
-	for (i = 0; i < 20; i++) {
-		im[i] = 0;
-		m[i] = 0;
-	}
-	j = 0;
-	m[j] = arr[0];
-	for (i = 0; i < data_size; i++) {
-		if (arr[i] <= (m[j] + step)) {
-			im[j]++;
-		}
-		else {
-			if (j < (SIZE_D-1)) {
-				j++;
-			}
-			else {
-				return 0;
-			}
-			m[j] = arr[i];
-			im[j]++;
-		}
-	}
-	for (i = 0, maxi=0; i < 20; i++) {
-		if (max < im[i]) {
-			max = im[i];
-			maxi = i;
-		}
-	}
-	result = (m[maxi] + m[maxi] + step) / 2;
-	return result;
-}

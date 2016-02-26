@@ -1,10 +1,11 @@
 #ifndef TIMERS_H
 #define TIMERS_H
 
-#define DAC_GTIMER    0
-#define MB_GTIMER     1
+#define DAC_GTIMER	0
+#define MB_GTIMER	1
+#define DBG_GTIMER	2
 
-#define MAX_GTIMERS  2
+#define MAX_GTIMERS	3
 
 void GTimers_Init(void);
 void GTimers_Process(void);

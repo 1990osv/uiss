@@ -138,8 +138,7 @@ void PendSV_Handler(void)
 *******************************************************************************/
 void SysTick_Handler(void)
 {
-	loopStart();
-	MDR_PORTC->RXTX ^= (1<<1);
+	loop_start();
 }
 /*******************************************************************************
 * Function Name  : CAN1_IRQHandler
@@ -192,19 +191,11 @@ void UART1_IRQHandler(void)
 {
 	if (UART_GetITStatusMasked(MDR_UART1, UART_IT_RX) == SET){
 		UART_ClearITPendingBit(MDR_UART1, UART_IT_TX);
-		//uart1_IT_TX_flag = SET;
-		RXbuf[RXn] = UART_ReceiveData (MDR_UART1);
-		RXn++;
-		GTimer_Reset(MB_GTIMER);
+		modbus_RxInterrupt();
 	}
 	if (UART_GetITStatusMasked(MDR_UART1, UART_IT_TX) == SET){
 		UART_ClearITPendingBit(MDR_UART1, UART_IT_TX);
-		if(TXn>TXi){
-			UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
-		}
-		else if(TXn==TXi){
-			SWITCH_READ_MODE;//DOT4_PORT->RXTX &= ~(1<<DOT4_PIN);
-		}
+		modbus_TxInterrupt();
 	}
 	
 }
@@ -286,8 +277,7 @@ void Timer1_IRQHandler(void)
 
 void Timer2_IRQHandler(void)
 {
-	query();
-	main_time+=MDR_TIMER2->CNT; //общее время
+	query_code();
 	MDR_TIMER2->CNT = 0x0000;
 	MDR_TIMER2->STATUS &= ~(1 << 1);
 	NVIC_ClearPendingIRQ(Timer2_IRQn);

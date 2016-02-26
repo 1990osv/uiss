@@ -3,40 +3,27 @@
 #include "global.h"
 #include "modbus.h"
 #include "crc16.h"
-#define false 	0x00
-#define	true	~false
 
-static volatile unsigned char status=MB_COMPLETE;
 
+unsigned char RXbuf[RX_BUFFER_SIZE];
+unsigned char TXbuf[TX_BUFFER_SIZE];
+unsigned char RXn;
+unsigned char TXn,TXi;
+
+static void razbor(unsigned char *data, unsigned char n);
 static void MB_F01(unsigned char *data, unsigned char n);
 static void MB_F03(unsigned char *data, unsigned char n);
 static void MB_F05(unsigned char *data, unsigned char n);
 static void MB_F10(unsigned char *data, unsigned char n);
 static void mb_exception_rsp(unsigned char func, unsigned char code);
-
 static void send_msg(unsigned char n);
 
-unsigned char GetStatus(void)
-{
-	return status;
-}
-
-unsigned char checkMyAdress(unsigned char data)
-{
-	if(data==MY_MODBUS_ADR){
-		return true;
-	}
-	else {
-		return false;
-	}
-}
-
-unsigned char razbor(unsigned char *data, unsigned char n)
+void razbor(unsigned char *data, unsigned char n)
 {
 	TXbuf[0]=MY_MODBUS_ADR;
 
-	if(!checkMyAdress(data[0])){
-		return MB_ADDRESS_ERROR;
+	if(data[0] != MY_MODBUS_ADR){
+		return;
 	}
 	
 	TXbuf[1] = data[1]; //function code   
@@ -56,9 +43,7 @@ unsigned char razbor(unsigned char *data, unsigned char n)
 	}	
 	else{
 		mb_exception_rsp(data[1],0x01); //function not supported
-		return MB_FUNCTION_ERR;
 	}
-	return MB_COMPLETE;
 }
 
 void MB_F01(unsigned char *data, unsigned char n)
@@ -91,7 +76,7 @@ void MB_F03(unsigned char *data, unsigned char n)
 	uint16_t addr=0, count=0;
 	uint8_t	i=0;
 	
-	count = data[5]*2; //registrs count
+	count = data[5]*2; //registers count
 	addr = data[3]+(data[2]<<8);
 	
 	TXbuf[2] = count;
@@ -147,14 +132,12 @@ void MB_F05(unsigned char *data, unsigned char n)
 	case 2:{
 		if(TXbuf[4] == 0xFF){
 			sod_init(); 
-			sod_begin_init=1;
 		}
 	} break;
 	
 	case 3:{
 		if(TXbuf[4] == 0xFF){	
-			sod_init(); 
-			send_raw_data=1; 
+			sod_send_raw_data(); 
 		}
 	} break;
 	
@@ -209,6 +192,35 @@ static void send_msg(unsigned char n)
 	addCRC16(TXbuf,n);
 	TXi=0;
 	TXn=n+3;
-	SWITCH_SEND_MODE;//DOT4_PORT->RXTX |= (1<<DOT4_PIN);
+	SWITCH_SEND_MODE;
 	UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
 }
+
+void modbus_process(void)
+{
+	if (GTimer_Get(MB_GTIMER) >= 40){  //4ms 9600
+		razbor(RXbuf, RXn);
+		RXn = 0;
+		GTimer_Stop(MB_GTIMER);
+	}
+}
+
+
+
+void modbus_TxInterrupt(void)
+{
+	if(TXn>TXi){
+		UART_SendData (MDR_UART1, (uint16_t)(TXbuf[TXi++]));
+	}
+	else if(TXn==TXi){
+		SWITCH_READ_MODE;
+	}
+}
+
+void modbus_RxInterrupt(void)
+{
+	RXbuf[RXn] = UART_ReceiveData (MDR_UART1);
+	RXn++;
+	GTimer_Reset(MB_GTIMER);
+}
+

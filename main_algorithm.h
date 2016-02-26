@@ -1,17 +1,18 @@
 #ifndef MAIN_ALGORITHM_H
 #define	MAIN_ALGORITHM_H
 
-extern volatile unsigned char sod_begin_init;
-extern volatile unsigned char sod_first_start;
-extern volatile unsigned char send_raw_data;
-extern volatile unsigned int time_code;
+#define SIZE_D  20				// максимальное количество диапазонов
 
-void loopStart(void);
-void loopStop(void);
-void query(void);
+extern unsigned int im[SIZE_D];		// массив с подсчетами
+extern unsigned int m[SIZE_D];		// массив с диапазонами (хранит только начало диапазона)
+
+void loop_start(void);
+void loop_stop(void);
+void query_code(void);
 unsigned char raschet(void);
 
 void sod_init(void);
+void sod_send_raw_data(void);
 char sod_raschet(void);
 
 unsigned char current_sod(void);

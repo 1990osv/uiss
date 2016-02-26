@@ -10,44 +10,19 @@
 #include "MDR32F9Qx_eeprom.h"
 #include "MDR32F9Qx_dac.h"
 
-#include "sort.h"
 #include "init.h"
 #include "timers.h"
 #include "main_algorithm.h"
 #include "modbus.h"
 #include "ports.h"
 
-
+#include <stdbool.h>
 #include <stdio.h>
 
 #define GLOBAL_CPU_CLOCK 	80000000
 
 #define PARAMETRS_CNT		30
 #define PARAMETRS_ADDR		0x08019000
-
-#define ADDR_SODER		1
-
-#define ADDR_MYFLOAT		4
-
-#define ADDR_TIME1		8
-#define ADDR_TIME2		10
-#define ADDR_TIME3		12
-#define ADDR_TIME4		14
-#define ADDR_TIME5		16
-#define ADDR_TIME6		18
-
-
-#define ADDR_TIME_CODE		20
-
-extern uint8_t RXbuf[16];
-extern uint8_t RXn;
-
-extern uint8_t TXbuf[16];
-extern uint8_t TXn,TXi;
-
-extern volatile unsigned int main_time;
-
-extern uint16_t Soder;
 
 union __all {
 	struct {
@@ -68,6 +43,7 @@ union __all {
 			 int bSod;	//52
 		unsigned int PWMperiod;	//56
 		unsigned int PWMcnt;	//60
+
 		
 	};
 	uint32_t BUF[PARAMETRS_CNT];
@@ -81,14 +57,5 @@ void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr);
 void writeParamToROM(uint32_t Address, uint32_t *ptr);
 void validation_param(void);
 
-//unsigned int mabs(int a)
-//{
-//	if (a > 0){
-//		return a;
-//	}
-//	else{
-//		return a*(-1);
-//	}
-//}
 
 #endif

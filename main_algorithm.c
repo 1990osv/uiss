@@ -125,21 +125,19 @@ void query_code(void)
 	case 3 :{						//START PULSE
 		
 		if(start_i == 0){
-			START_PORT->RXTX &= ~(1<<START_PIN);
+			START_PORT->RXTX |= (1<<START_PIN);
 			MDR_TIMER2->ARR = start_time[start_j]; //Time.startWidth0; 
 			start_i = 1;
 			start_j ++;
 		}
 		else{
-			START_PORT->RXTX |= (1<<START_PIN);
+			START_PORT->RXTX &= ~(1<<START_PIN);
 			start_i = 0;
 			MDR_TIMER2->ARR = start_time[start_j]; //Time.startWidth1; 
 			start_j ++;
 			if(start_j >= (Par.PWMcnt * 2))
 				status++;
 		}
-	
-		//START_PORT->RXTX ^= (1<<START_PIN);			!!!!!!!!!!????????????????
 	} break;	
 	case 4 :{
 		RZ_PORT->RXTX &= ~(1<<RZ_PIN);			

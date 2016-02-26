@@ -73,34 +73,40 @@ void MB_F01(unsigned char *data, unsigned char n)
 
 void MB_F03(unsigned char *data, unsigned char n)
 {
-	uint16_t addr=0, count=0;
-	uint8_t	i=0;
+	uint16_t addr = 0, count = 0;
+	uint8_t	i = 0;
 	
-	count = data[5]*2; //registers count
-	addr = data[3]+(data[2]<<8);
+	count = data[5] * 2; //registers count
+	addr = data[3] + (data[2] << 8);
 	
 	TXbuf[2] = count;
 
-	if (addr>=200){	
-		addr-=200;
+	if (addr >= 400) {	//adc_data_start_adress	
+		addr-=400;
+		TXbuf[3] = ADCConvertedValue[addr] >> 8;
+		TXbuf[3+1] = ADCConvertedValue[addr] & 0xff;	
+	}	
+	else if (addr >= 300) {	//im_data_start_adress 
+		addr-=300;
 		TXbuf[3] = im[addr]>>8;
 		TXbuf[3+1] = im[addr]&0xff;	
 	}
-	else if(addr>=100){
-		addr-=100;
+	else if (addr >= 200) { //m_data_start_adress
+		addr-=200;
 		TXbuf[3] = m[addr]>>8;
 		TXbuf[3+1] = m[addr]&0xff;	
 	}
-	else{
-		if(addr+count>PARAMETRS_CNT*4){
+	else {
+		if(addr+count > PARAMETRS_CNT * 4) {
 			mb_exception_rsp(data[1],0x02);	
 		}
-		for(i=0;i<count;i+=2){
+		for(i = 0; i < count; i += 2) {
 			TXbuf[3+i] = Par.bbuf[addr+i+1];
 			TXbuf[3+i+1] = Par.bbuf[addr+i];
 		}
 	}
-	send_msg(3+count);
+	
+	send_msg(3 + count);
 }
 
 

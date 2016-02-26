@@ -1,8 +1,110 @@
 #include "global.h"
 
+
+
 union __all Par;
 
-uint32_t dac_temp=0;
+//static uint32_t dac_temp=0;
+
+uint16_t ADCConvertedValue[ADC_DATA_SIZE];
+
+DMA_ChannelInitTypeDef DMA_InitStr;
+DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
+DMA_CtrlDataInitTypeDef DMA_AltCtrlStr;
+
+void adc_initialisation(void)
+{
+	ADC_InitTypeDef sADC;
+	ADCx_InitTypeDef sADCx;
+
+	RST_CLK_PCLKcmd((RST_CLK_PCLK_RST_CLK | RST_CLK_PCLK_DMA | RST_CLK_PCLK_ADC),ENABLE);
+	RST_CLK_PCLKcmd((RST_CLK_PCLK_SSP1 | RST_CLK_PCLK_SSP2),ENABLE);
+
+	
+	/* DMA Configuration */
+	/* Reset all settings */
+	DMA_DeInit();
+	DMA_StructInit(&DMA_InitStr);
+	/* Set Primary Control Data */
+	DMA_PriCtrlStr.DMA_SourceBaseAddr = (uint32_t)(&(MDR_ADC->ADC1_RESULT));
+	DMA_PriCtrlStr.DMA_DestBaseAddr = (uint32_t)ADCConvertedValue;
+	DMA_PriCtrlStr.DMA_SourceIncSize = DMA_SourceIncNo;
+	DMA_PriCtrlStr.DMA_DestIncSize = DMA_DestIncHalfword;
+	DMA_PriCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+	DMA_PriCtrlStr.DMA_Mode = DMA_Mode_PingPong;
+	DMA_PriCtrlStr.DMA_CycleSize = ADC_DATA_SIZE;
+	DMA_PriCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
+	DMA_PriCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;
+	DMA_PriCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;
+
+	/* Set Alternate Control Data */
+	DMA_AltCtrlStr.DMA_SourceBaseAddr = (uint32_t)(&(MDR_ADC->ADC1_RESULT));
+	DMA_AltCtrlStr.DMA_DestBaseAddr   = (uint32_t)ADCConvertedValue;
+	DMA_AltCtrlStr.DMA_SourceIncSize = DMA_SourceIncNo;
+	DMA_AltCtrlStr.DMA_DestIncSize = DMA_DestIncHalfword;
+	DMA_AltCtrlStr.DMA_MemoryDataSize = DMA_MemoryDataSize_HalfWord;
+	DMA_AltCtrlStr.DMA_Mode = DMA_Mode_PingPong;
+	DMA_AltCtrlStr.DMA_CycleSize = ADC_DATA_SIZE;
+	DMA_AltCtrlStr.DMA_NumContinuous = DMA_Transfers_1;
+	DMA_AltCtrlStr.DMA_SourceProtCtrl = DMA_SourcePrivileged;
+	DMA_AltCtrlStr.DMA_DestProtCtrl = DMA_DestPrivileged;
+
+	/* Set Channel Structure */
+	DMA_InitStr.DMA_PriCtrlData = &DMA_PriCtrlStr;
+	DMA_InitStr.DMA_AltCtrlData = &DMA_AltCtrlStr;
+	DMA_InitStr.DMA_Priority = DMA_Priority_Default;
+	DMA_InitStr.DMA_UseBurst = DMA_BurstClear;
+	DMA_InitStr.DMA_SelectDataStructure = DMA_CTRL_DATA_PRIMARY;
+
+	/* Init DMA channel ADC1 */
+	DMA_Init(DMA_Channel_ADC1, &DMA_InitStr);
+
+	/* Enable dma_req or dma_sreq to generate DMA request */
+	MDR_DMA->CHNL_REQ_MASK_CLR = (1<<DMA_Channel_ADC1);
+	MDR_DMA->CHNL_USEBURST_CLR = (1<<DMA_Channel_ADC1);
+
+	/* Enable DMA channel ADC1 */
+	DMA_Cmd(DMA_Channel_ADC1, ENABLE);
+
+	/* ADC Configuration */
+	/* Reset all ADC settings */
+	ADC_DeInit();
+	ADC_StructInit(&sADC);
+
+	sADC.ADC_SynchronousMode      = ADC_SyncMode_Independent;
+	sADC.ADC_StartDelay           = 0;
+	sADC.ADC_TempSensor           = ADC_TEMP_SENSOR_Enable;
+	sADC.ADC_TempSensorAmplifier  = ADC_TEMP_SENSOR_AMPLIFIER_Enable;
+	sADC.ADC_TempSensorConversion = ADC_TEMP_SENSOR_CONVERSION_Enable;
+	sADC.ADC_IntVRefConversion    = ADC_VREF_CONVERSION_Disable;
+	sADC.ADC_IntVRefTrimming      = 1;
+	ADC_Init (&sADC);
+
+	/* ADC1 Configuration */
+	ADCx_StructInit (&sADCx);
+	sADCx.ADC_ClockSource      = ADC_CLOCK_SOURCE_CPU;
+	sADCx.ADC_SamplingMode     = ADC_SAMPLING_MODE_CICLIC_CONV;
+	sADCx.ADC_ChannelSwitching = ADC_CH_SWITCHING_Disable;
+	sADCx.ADC_ChannelNumber    = ADC_CH_ADC7; //ADC_CH_TEMP_SENSOR
+	sADCx.ADC_Channels         = 0;
+	sADCx.ADC_LevelControl     = ADC_LEVEL_CONTROL_Disable;
+	sADCx.ADC_LowLevel         = 0;
+	sADCx.ADC_HighLevel        = 0;
+	sADCx.ADC_VRefSource       = ADC_VREF_SOURCE_INTERNAL;
+	sADCx.ADC_IntVRefSource    = ADC_INT_VREF_SOURCE_INEXACT;
+	sADCx.ADC_Prescaler        = ADC_CLK_div_2;
+	sADCx.ADC_DelayGo          = 7;
+	ADC1_Init (&sADCx);
+
+	/* Enable ADC1 EOCIF and AWOIFEN interupts */
+	ADC1_ITConfig((ADCx_IT_END_OF_CONVERSION  | ADCx_IT_OUT_OF_RANGE), DISABLE);
+
+	/* ADC1 enable */
+	ADC1_Cmd (ENABLE);
+	NVIC_SetPriority(DMA_IRQn,7);
+	/* Enable DMA IRQ */
+	NVIC_EnableIRQ(DMA_IRQn);	
+}
 
 void readParamIntoRAM(uint32_t Address, uint32_t *ptr)
 {
@@ -156,17 +258,20 @@ int main(void)
 	sod_init();
 	
 	Uart1_Init();
-	mDAC_Init();
-
+//	mDAC_Init();
+//	DAC2_SetData(0x3FF);
+	
+	adc_initialisation();
+	
 	while(true){
 		modbus_process();
 		sod_raschet();
-		if (GTimer_Get(DAC_GTIMER) >= 1000){  //100ms
-			DAC2_SetData(dac_temp++);
-			if(dac_temp>0x0FFF)
-				dac_temp=0;
-			GTimer_Reset(DAC_GTIMER);
-		}
+//		if (GTimer_Get(DAC_GTIMER) >= 1000){  //100ms
+//			DAC2_SetData(dac_temp++);
+//			if(dac_temp>0x0FFF)
+//				dac_temp=0;
+//			GTimer_Reset(DAC_GTIMER);
+//		}
 	}
 }
 

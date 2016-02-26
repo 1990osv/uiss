@@ -106,6 +106,11 @@ void Init_All_Ports(void)
 	PORTD_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
 	PORT_Init(MDR_PORTD, &PORTD_InitStructure);
 	
+	PORT_InitStructure.PORT_Pin   = PORT_Pin_7;
+	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+	PORT_InitStructure.PORT_MODE  = PORT_MODE_ANALOG;
+	PORT_Init(MDR_PORTD, &PORT_InitStructure);
+	
 	/* Configure PORTE */
 	PORTE_InitStructure.PORT_Pin	= (DOT4_PIN_E | DOT5_PIN_E | START_PIN_E);
 	PORTE_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт

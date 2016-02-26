@@ -179,6 +179,26 @@ void USB_IRQHandler(void)
 *******************************************************************************/
 void DMA_IRQHandler(void)
 {
+//uint8_t i;
+
+	/* Reconfigure the inactive DMA data structure*/
+	if((MDR_DMA->CHNL_PRI_ALT_SET & (1<<DMA_Channel_ADC1)) == (0<<DMA_Channel_ADC1)){
+		DMA_AltCtrlStr.DMA_CycleSize = ADC_DATA_SIZE;
+		DMA_Init(DMA_Channel_ADC1, &DMA_InitStr);
+	}
+	else if((MDR_DMA->CHNL_PRI_ALT_SET & (1<<DMA_Channel_ADC1)) == (1<<DMA_Channel_ADC1)){
+		DMA_PriCtrlStr.DMA_CycleSize = ADC_DATA_SIZE;
+		DMA_Init(DMA_Channel_ADC1, &DMA_InitStr);
+	}
+	
+//	for(i = 0; i < ADC_DATA_SIZE; ++i) {
+//		ITM_SendChar(ADCConvertedValue[i]>>8);
+//		ITM_SendChar(ADCConvertedValue[i] & 0x00FF);
+//		ITM_SendChar(0xAA);
+//		ITM_SendChar(0xAA);
+//	}
+	
+	//NVIC_ClearPendingIRQ(DMA_IRQn);
 }
 /*******************************************************************************
 * Function Name  : UART1_IRQHandler
@@ -197,7 +217,7 @@ void UART1_IRQHandler(void)
 		UART_ClearITPendingBit(MDR_UART1, UART_IT_TX);
 		modbus_TxInterrupt();
 	}
-	
+
 }
 /*******************************************************************************
 * Function Name  : UART2_IRQHandler

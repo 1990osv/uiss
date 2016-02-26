@@ -9,6 +9,8 @@
 #include "MDR32F9Qx_timer.h"
 #include "MDR32F9Qx_eeprom.h"
 #include "MDR32F9Qx_dac.h"
+#include "MDR32F9Qx_adc.h"
+#include "MDR32F9Qx_dma.h"
 
 #include "init.h"
 #include "timers.h"
@@ -23,6 +25,8 @@
 
 #define PARAMETRS_CNT		40
 #define PARAMETRS_ADDR		0x08019000
+
+#define ADC_DATA_SIZE		100
 
 union __all {
 	struct {
@@ -51,6 +55,13 @@ union __all {
 };
 
 extern union __all Par;
+
+
+extern uint16_t ADCConvertedValue[ADC_DATA_SIZE];
+
+extern DMA_ChannelInitTypeDef DMA_InitStr;
+extern DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
+extern DMA_CtrlDataInitTypeDef DMA_AltCtrlStr;
 
 void readParamToRAM(uint32_t Address, uint32_t *ptr);
 void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr);

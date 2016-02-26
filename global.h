@@ -21,7 +21,7 @@
 
 #define GLOBAL_CPU_CLOCK 	80000000
 
-#define PARAMETRS_CNT		30
+#define PARAMETRS_CNT		40
 #define PARAMETRS_ADDR		0x08019000
 
 union __all {
@@ -43,8 +43,8 @@ union __all {
 			 int bSod;	//52
 		unsigned int PWMperiod;	//56
 		unsigned int PWMcnt;	//60
-
-		
+		unsigned int startTime[SIZE_START_TIME];	//64..144
+					//146
 	};
 	uint32_t BUF[PARAMETRS_CNT];
 	uint8_t	bbuf[PARAMETRS_CNT * 4];

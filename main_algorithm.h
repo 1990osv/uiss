@@ -1,10 +1,14 @@
 #ifndef MAIN_ALGORITHM_H
 #define	MAIN_ALGORITHM_H
 
-#define SIZE_D  20				// максимальное количество диапазонов
+#define SIZE_D  	20			// максимальное количество диапазонов
+#define SIZE_TIME  	6			// массив с временами стартовых импульсов
+#define SIZE_START_TIME 20			// массив с временами стартовых импульсов
 
-extern unsigned int im[SIZE_D];		// массив с подсчетами
-extern unsigned int m[SIZE_D];		// массив с диапазонами (хранит только начало диапазона)
+
+
+extern unsigned int im[SIZE_D];			// массив с подсчетами
+extern unsigned int m[SIZE_D];			// массив с диапазонами (хранит только начало диапазона)
 
 void loop_start(void);
 void loop_stop(void);

@@ -23,10 +23,10 @@ void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr)
 static uint8_t i = 0;
 	
 	Par.Sod		= 0;		//содержание связующего
-	Par.Time1	= 750;  	// стартовый импульс 7.5 us
-	Par.Time2	= 2400; 	// мертвое время 24 us 	
-	Par.Time3	= 12000; 	// общее время 120 us
-	Par.Time4	= 500;		// строб 5 us
+	Par.Time1	= 1000;  	// стартовый импульс 10.0 us
+	Par.Time2	= 2400; 	// мертвое время 24.0 us 	
+	Par.Time3	= 12000; 	// общее время 120.0 us
+	Par.Time4	= 500;		// строб 5.0 us
 	Par.Time5	= 50;		// частота опроса
 	Par.Time6	= 212;		// смещение 2.12 us 
 					// (среднее время выполнения прерывания от таймера)
@@ -37,6 +37,11 @@ static uint8_t i = 0;
 	
 	Par.PWMperiod	= 1500;
 	Par.PWMcnt	= 1;
+	
+	for(i = 0; i < SIZE_START_TIME; ++i) {
+		Par.startTime[i] = 1000;
+	}
+	
 	
 	__disable_irq();
 	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);

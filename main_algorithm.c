@@ -16,22 +16,22 @@ volatile unsigned int 	count_time_code=0; 	// счетчик полученны�
 
 unsigned int store[STORE_SIZE]; //массив кодов
 	
-volatile double speed,speed_begin,speed_smol;	//скорости текущая, начальная, в смоле
-volatile double deadtime;			// мертвое время вычитаемое из time_code
-volatile double time;				// время прохождения сигнала в секундах
-volatile int sod;				// расчитанное содержание связующего
+volatile double speed,speed_begin,speed_smol;		//скорости текущая, начальная, в смоле
+volatile double deadtime;				// мертвое время вычитаемое из time_code
+volatile double time;					// время прохождения сигнала в секундах
+volatile int sod;					// расчитанное содержание связующего
 
-volatile bool sod_begin_init=false;		// флаг начальной установки по команде
-volatile bool send_raw_data=false;		// флаг отправки сырых данных
+volatile bool sod_begin_init=false;			// флаг начальной установки по команде
+volatile bool send_raw_data=false;			// флаг отправки сырых данных
 
-volatile unsigned char status=0; 		// автомат отсчета времени
-volatile unsigned int state_time[6]; 		// временные задержки автомата
-
+volatile unsigned char status=0; 			// автомат отсчета времени
+volatile unsigned int state_time[SIZE_TIME]; 		// временные задержки автомата
+volatile unsigned int start_time[SIZE_START_TIME];	// временные задержки автомата только стартового импульса
 volatile unsigned char start_i=0, start_j=0;
 
 struct time{
-	unsigned int startWindth0;
-	unsigned int startWindth1;
+//	unsigned int startWidth0;
+//	unsigned int startWidth1;
 	unsigned int deadTime;
 	unsigned int strob;
 	unsigned int mainTime;
@@ -41,8 +41,8 @@ struct time{
 
 static void qs(unsigned int* s_arr, int first, int last);
 //static int average(unsigned int* s_arr, unsigned char n);
-static unsigned int my_filter(unsigned int * arr, unsigned int data_size,
-			      unsigned int step);
+static unsigned int my_filter(unsigned int * arr, unsigned int data_size,unsigned int step);
+			      
 
 void sod_init(void)
 {
@@ -68,11 +68,16 @@ double calc_sod(double s, double sb, double ss)
 
 void update_state_time(void)
 {
+unsigned char i;
 	__disable_irq();
 	SysTick_Config(GLOBAL_CPU_CLOCK / Par.Time5);
-	
-	Time.startWindth0 = (Par.Time1 - Par.Time6)*8/10;			// длительность стартовых импульсов 7.5 us
-	Time.startWindth1 = (Par.PWMperiod - Par.Time1 -Par.Time6)*8/10;	// время между стартовыми импульсами
+
+	for(i = 0; i < SIZE_START_TIME; ++i) {
+		start_time[i] = (Par.startTime[i] - Par.Time6)*8/10;
+	}
+
+//	Time.startWidth0 = (Par.Time1 - Par.Time6)*8/10;			// длительность стартовых импульсов 7.5 us
+//	Time.startWidth1 = (Par.PWMperiod - Par.Time1 -Par.Time6)*8/10;	// время между стартовыми импульсами
 	Time.deadTime = (Par.Time2 - Par.Time6)*8/10;				// мертвое время 24 us 
 	Time.strob = (Par.Time4-Par.Time6)*8/10;				// строб 5 us
 	Time.mainTime =  (Par.Time3 - Par.Time2  -Par.Time6)*8/10;		// общее время 120 us
@@ -97,7 +102,8 @@ void loop_stop(void)
 	MDR_TIMER2->CNTRL = 0; /*счет вверх по TIM_CLK, таймер выкл.*/
 }
 
-void query_code(void){ 
+void query_code(void)
+{ 
 	switch (status){
 	case 1 :{
 		WR_PORT->RXTX &= ~(1<<WR_PIN);
@@ -107,8 +113,7 @@ void query_code(void){
 	case 2 :{
 		WR_PORT->RXTX |= (1<<WR_PIN);
 		
-		time_code = 	((DATAH_PORT->RXTX & DATAH_MASK) << 8) | 
-				(DATAL_PORT->RXTX & DATAL_MASK);
+		time_code = ((DATAH_PORT->RXTX & DATAH_MASK) << 8) | (DATAL_PORT->RXTX & DATAL_MASK);
 		new_time_code = true & !FALSE_DATA;
 		RESDAT_PORT->RXTX |= (1<<RESDAT_PIN);	
 		DT_PORT->RXTX |= (1<<DT_PIN);
@@ -117,24 +122,24 @@ void query_code(void){
 		start_j = 0;
 		status++;
 	} break;
-	case 3 :{
+	case 3 :{						//START PULSE
 		
 		if(start_i == 0){
 			START_PORT->RXTX &= ~(1<<START_PIN);
-			MDR_TIMER2->ARR = Time.startWindth0; 
+			MDR_TIMER2->ARR = start_time[start_j]; //Time.startWidth0; 
 			start_i = 1;
-			start_j++;
+			start_j ++;
 		}
 		else{
 			START_PORT->RXTX |= (1<<START_PIN);
 			start_i = 0;
-			MDR_TIMER2->ARR = Time.startWindth1; 
-			if(start_j >= Par.PWMcnt){
+			MDR_TIMER2->ARR = start_time[start_j]; //Time.startWidth1; 
+			start_j ++;
+			if(start_j >= (Par.PWMcnt * 2))
 				status++;
-			}
 		}
 	
-		START_PORT->RXTX ^= (1<<START_PIN);
+		//START_PORT->RXTX ^= (1<<START_PIN);			!!!!!!!!!!????????????????
 	} break;	
 	case 4 :{
 		RZ_PORT->RXTX &= ~(1<<RZ_PIN);			
@@ -223,18 +228,20 @@ char sod_raschet(void)
 }
 
 
-/*быстрая сортировка
-*/
-void qs(unsigned int* s_arr, int first, int last) //n - количество элементов
+
+void qs(unsigned int * s_arr, int first, int last) //быстрая сортировка n - количество элементов
 {
 int i = first, j = last, x = s_arr[(first + last) / 2];
 
 	do{
-		while (s_arr[i] < x) i++;
-		while (s_arr[j] > x) j--;
+		while (s_arr[i] < x)
+			i++;
+		while (s_arr[j] > x)
+			j--;
 
-		if(i <= j){
-			if (s_arr[i] > s_arr[j]) SWAP(s_arr[i], s_arr[j]);
+		if(i <= j) {
+			if (s_arr[i] > s_arr[j])
+				SWAP(s_arr[i], s_arr[j]);
 			i++;
 			j--;
 		}
@@ -257,6 +264,7 @@ int average(unsigned int* s_arr, unsigned char n) //n - количество э�
 	return summ/n;
 }
 */
+
 
 /**
   * @brief  Находит наиболее вероятное значение 

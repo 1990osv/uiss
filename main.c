@@ -1,11 +1,11 @@
 #include "global.h"
 
-
+unsigned int dac_out;
 
 union __all Par;
 
-//static uint32_t dac_temp=0;
-
+//static uint32_t dac_out=0;
+unsigned char adcConvertationEnable;
 uint16_t ADCConvertedValue[ADC_DATA_SIZE];
 
 DMA_ChannelInitTypeDef DMA_InitStr;
@@ -99,11 +99,6 @@ void adc_initialisation(void)
 	/* Enable ADC1 EOCIF and AWOIFEN interupts */
 	ADC1_ITConfig((ADCx_IT_END_OF_CONVERSION  | ADCx_IT_OUT_OF_RANGE), DISABLE);
 
-	/* ADC1 enable */
-	ADC1_Cmd (ENABLE);
-	NVIC_SetPriority(DMA_IRQn,7);
-	/* Enable DMA IRQ */
-	NVIC_EnableIRQ(DMA_IRQn);	
 }
 
 void readParamIntoRAM(uint32_t Address, uint32_t *ptr)
@@ -188,8 +183,8 @@ void validation_param(void)
 		Par.Time1	= 750;		// стартовый импульс 7.5 us
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
-	if((Par.Time2<500)||(Par.Time2>20000)){
-		Par.Time2	= 2400; 	// мертвое время 24 us 	
+	if((Par.Time2<1)||(Par.Time2>20000)){
+		Par.Time2	= 18; 			// мертвое время 1,8 us 	
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
 	if((Par.Time3<500)||(Par.Time3>20000)){
@@ -200,7 +195,7 @@ void validation_param(void)
 		Par.Time4	= 500;		// строб 5 us
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
-	if((Par.Time5<10)||(Par.Time5>200)){
+	if((Par.Time5<10)||(Par.Time5>1000)){
 		Par.Time5	= 50;		// частота опроса
 		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
 	}
@@ -227,7 +222,6 @@ void validation_param(void)
 	}
 
 }
-
 
 void uncrash_delay(void)
 {
@@ -258,18 +252,18 @@ int main(void)
 	sod_init();
 	
 	Uart1_Init();
-//	mDAC_Init();
-//	DAC2_SetData(0x3FF);
+	mDAC_Init();
+	DAC2_SetData(0);
 	
+	adcConvertationEnable = 0;	
 	adc_initialisation();
 	
 	while(true){
 		modbus_process();
 		sod_raschet();
-//		if (GTimer_Get(DAC_GTIMER) >= 1000){  //100ms
-//			DAC2_SetData(dac_temp++);
-//			if(dac_temp>0x0FFF)
-//				dac_temp=0;
+		DAC2_SetData(dac_out);
+//		if (GTimer_Get(DAC_GTIMER) >= 10000){  //1000ms
+//			DAC2_SetData(dac_out);
 //			GTimer_Reset(DAC_GTIMER);
 //		}
 	}

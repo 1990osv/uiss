@@ -31,32 +31,34 @@
 union __all {
 	struct {
 					//address
-			 int Sod;	//0
-		unsigned int Time1;	//4
-		unsigned int Time2;	//8	
-		unsigned int Time3;	//12
-		unsigned int Time4;	//16
-		unsigned int Time5;	//20
-		unsigned int Time6;	//24
-		unsigned int timeCod;	//28
-		unsigned int timeCodA;	//32
-			 int bSpeed;	//36
-		unsigned int AcBase;	//40
-		unsigned int SmSpeed;	//44
-		unsigned int cSpeed;	//48
-			 int bSod;	//52
-		unsigned int PWMperiod;	//56
-		unsigned int PWMcnt;	//60
-		unsigned int startTime[SIZE_START_TIME];	//64..144
+		volatile 	 int Sod;	//0
+		volatile unsigned int Time1;	//4
+		volatile unsigned int Time2;	//8	
+		volatile unsigned int Time3;	//12
+		volatile unsigned int Time4;	//16
+		volatile unsigned int Time5;	//20
+		volatile unsigned int Time6;	//24
+		volatile unsigned int timeCod;	//28
+		volatile unsigned int timeCodA;	//32
+		volatile 	 int bSpeed;	//36
+		volatile unsigned int AcBase;	//40
+		volatile unsigned int SmSpeed;	//44
+		volatile unsigned int cSpeed;	//48
+		volatile 	 int bSod;	//52
+		volatile unsigned int PWMperiod;	//56
+		volatile unsigned int PWMcnt;	//60
+		volatile unsigned int startTime[SIZE_START_TIME];	//64..144
 					//146
 	};
 	uint32_t BUF[PARAMETRS_CNT];
 	uint8_t	bbuf[PARAMETRS_CNT * 4];
 };
 
+extern unsigned int dac_out;
+
 extern union __all Par;
 
-
+extern unsigned char adcConvertationEnable;
 extern uint16_t ADCConvertedValue[ADC_DATA_SIZE];
 
 extern DMA_ChannelInitTypeDef DMA_InitStr;

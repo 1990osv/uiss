@@ -143,6 +143,15 @@ void MB_F05(unsigned char *data, unsigned char n)
 	
 	case 3:{
 		if(TXbuf[4] == 0xFF){	
+			
+			/* ADC1 enable */
+			ADC1_Cmd (ENABLE);
+			NVIC_SetPriority(DMA_IRQn,7);
+			/* Enable DMA IRQ */
+			NVIC_EnableIRQ(DMA_IRQn);	
+			
+			adcConvertationEnable = 1;
+			
 			sod_send_raw_data(); 
 		}
 	} break;

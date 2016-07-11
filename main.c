@@ -1,12 +1,10 @@
 #include "global.h"
 
-unsigned int dac_out;
-
 union __all Par;
 
-//static uint32_t dac_out=0;
+unsigned int dac_out;
 unsigned char adcConvertationEnable;
-uint16_t ADCConvertedValue[ADC_DATA_SIZE];
+unsigned int ADCConvertedValue[ADC_DATA_SIZE];
 
 DMA_ChannelInitTypeDef DMA_InitStr;
 DMA_CtrlDataInitTypeDef DMA_PriCtrlStr;
@@ -19,7 +17,6 @@ void adc_initialisation(void)
 
 	RST_CLK_PCLKcmd((RST_CLK_PCLK_RST_CLK | RST_CLK_PCLK_DMA | RST_CLK_PCLK_ADC),ENABLE);
 	RST_CLK_PCLKcmd((RST_CLK_PCLK_SSP1 | RST_CLK_PCLK_SSP2),ENABLE);
-
 	
 	/* DMA Configuration */
 	/* Reset all settings */
@@ -101,17 +98,17 @@ void adc_initialisation(void)
 
 }
 
-void readParamIntoRAM(uint32_t Address, uint32_t *ptr)
+
+void readParamFromRAM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 	__disable_irq();
-	
-
 	for(i = 0; i < PARAMETRS_CNT; i++){
 		ptr[i]=EEPROM_ReadWord(Address + i * 4, EEPROM_Main_Bank_Select);
 	}
-	if(ptr[2] == 0xFFFFFFFF)
+	if((ptr[2] == 0xFFFFFFFF) && (ptr[3] == 0xFFFFFFFF)){
 		writeDefaultParamToROM(Address,Par.BUF);
+	}
 	__enable_irq();
 }
 
@@ -119,26 +116,26 @@ void writeDefaultParamToROM(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 	
-	Par.Sod		= 0;		//содержание связующего
-	Par.Time1	= 1000;  	// стартовый импульс 10.0 us
-	Par.Time2	= 2400; 	// мертвое время 24.0 us 	
-	Par.Time3	= 12000; 	// общее время 120.0 us
-	Par.Time4	= 500;		// строб 5.0 us
-	Par.Time5	= 50;		// частота опроса
-	Par.Time6	= 212;		// смещение 2.12 us 
-					// (среднее время выполнения прерывания от таймера)
+	Par.resinContent = 0;		
+	Par.deadTime	= 2400; 	 	
+	Par.mainTime	= 12000;
+	Par.strobTime	= 500;
+	Par.measureFrequence = 50;
+	Par.adjustTime	= 212;
+	
 	Par.timeCod	= 10;
-	Par.AcBase	= 200; 		//акустическая база (мм)
-	Par.SmSpeed	= 1500;		//скорость звука в смоле
-	Par.bSod	= 0;		//содержание связующего коррекция
+	Par.acusticBase	= 200;
+	Par.speedResin	= 1500;
+	Par.baseResinContent[0] = 0;
 	
-	Par.PWMperiod	= 1500;
-	Par.PWMcnt	= 1;
+	Par.startImpTime[0] = 1000; // ОДИН стартовый импульс 10.0 us
+	Par.startImpTime[1] = 0;
 	
-	for(i = 0; i < SIZE_START_TIME; ++i) {
-		Par.startTime[i] = 1000;
-	}
-	
+	Par.adress = 16;
+	Par.baudRate = 2;
+	Par.wordLength = 0;
+	Par.stopBits = 0;
+	Par.parity = 0;
 	
 	__disable_irq();
 	EEPROM_ErasePage(Address, EEPROM_Main_Bank_Select);
@@ -156,14 +153,10 @@ static uint8_t i = 0;
 				0x00000000);		
 		}
 	}
-
 	__enable_irq();
 }
 
-
-
-
-void writeParamToROM(uint32_t Address, uint32_t *ptr)
+void save_parametrs(uint32_t Address, uint32_t *ptr)
 {
 static uint8_t i = 0;
 
@@ -179,79 +172,72 @@ static uint8_t i = 0;
 
 void validation_param(void)
 {
-	if((Par.Time1<500)||(Par.Time1>2000)){
-		Par.Time1	= 750;		// стартовый импульс 7.5 us
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if((Par.Time2<1)||(Par.Time2>20000)){
-		Par.Time2	= 18; 			// мертвое время 1,8 us 	
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if((Par.Time3<500)||(Par.Time3>20000)){
-		Par.Time3	= 12000; 	// общее время 120 us
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if((Par.Time4<500)||(Par.Time4>20000)){
-		Par.Time4	= 500;		// строб 5 us
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if((Par.Time5<10)||(Par.Time5>1000)){
-		Par.Time5	= 50;		// частота опроса
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if((Par.Time6<100)||(Par.Time6>1000)){
-		Par.Time6	= 212;		// смещение 2.12 us 
-						// (среднее время выполнения прерывания от таймера)
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if((Par.AcBase<100)||(Par.AcBase>1000)){
-		Par.AcBase	= 200; 		//акустическая база (мм)
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if((Par.SmSpeed<500)||(Par.SmSpeed>2000)){
-		Par.SmSpeed	= 1500;		//скорость звука в смоле
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if(Par.bSod<-100){
-		Par.bSod	= -100;		//содержание связующего коррекция
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-	if(Par.bSod>100){
-		Par.bSod	= 100;		//содержание связующего коррекция
-		writeParamToROM(PARAMETRS_ADDR,Par.BUF);  	//Сохранение параметров
-	}
-
+//bool needSaveParametrs;
+//	needSaveParametrs = false; 
+//	if((Par.deadTime < 1)||(Par.deadTime > 20000)){
+//		Par.deadTime	= 18;	
+//		needSaveParametrs = true; 
+//	}
+//	if((Par.mainTime < 500)||(Par.mainTime > 20000)){
+//		Par.mainTime	= 12000;
+//		needSaveParametrs = true; 
+//	}
+//	if((Par.strobTime < 500)||(Par.strobTime > 20000)){
+//		Par.strobTime	= 500;
+//		needSaveParametrs = true; 
+//	}
+//	if((Par.measureFrequence < 10)||(Par.measureFrequence > 500)){
+//		Par.measureFrequence	= 50;
+//		needSaveParametrs = true; 
+//	}
+//	if((Par.adjustTime < 100)||(Par.adjustTime > 1000)){
+//		Par.adjustTime	= 212;
+//		needSaveParametrs = true; 
+//	}
+//	if((Par.acusticBase < 100)||(Par.acusticBase > 1000)){
+//		Par.acusticBase	= 200;
+//		needSaveParametrs = true; 
+//	}
+//	if((Par.speedResin < 500)||(Par.speedResin > 2000)){
+//		Par.speedResin	= 1500;
+//		needSaveParametrs = true; 
+//	}
+//	if(Par.baseResinContent[0] > 100){
+//		Par.baseResinContent[0] = 100;
+//		needSaveParametrs = true; 
+//	}
+//	
+//	if (needSaveParametrs)
+//		save_parametrs(PARAMETRS_ADDR,Par.BUF);
 }
 
 void uncrash_delay(void)
 {
-	while(GTimer_Get(DAC_GTIMER) <= 2000){ //на частоте 8 MHz секундная задержка
+	while(GTimer_Get(TMP_GTIMER) <= 2000){ //на частоте 8 MHz секундная задержка
 	}
-	GTimer_Reset(DAC_GTIMER);
+	GTimer_Reset(TMP_GTIMER);
 	MDR_PORTC->RXTX ^= (1<<1);
-	while(GTimer_Get(DAC_GTIMER) <= 2000){ //на частоте 8 MHz секундная задержка
+	while(GTimer_Get(TMP_GTIMER) <= 2000){ //на частоте 8 MHz секундная задержка
 	}
-	GTimer_Reset(DAC_GTIMER);
+	GTimer_Reset(TMP_GTIMER);
 	MDR_PORTC->RXTX ^= (1<<1);	
 }
 
 int main(void)
 {
-	Init_All_Ports();
-	Tim1_Tim2_Init();
-	GTimers_Init();
-	GTimer_Run(DAC_GTIMER);
-	
-	uncrash_delay();
+	Init_All_Ports();       //!
+	Tim1_Tim2_Init();		    //!
+	GTimers_Init();			    //!
+	GTimer_Run(TMP_GTIMER);	//!
+	uncrash_delay(); 		    //!
+	HSE_80MHz_init();		    //!
 
-	HSE_80MHz_init();
-	
-	readParamIntoRAM(PARAMETRS_ADDR,Par.BUF);
+	readParamFromRAM(PARAMETRS_ADDR,Par.BUF);
 	validation_param();
 	update_state_time();
-	sod_init();
 	
-	Uart1_Init();
+	Uart1_Init();   //дефолтные настройки по пину PORTF4
+  
 	mDAC_Init();
 	DAC2_SetData(0);
 	
@@ -260,12 +246,8 @@ int main(void)
 	
 	while(true){
 		modbus_process();
-		sod_raschet();
+		computeContent();
 		DAC2_SetData(dac_out);
-//		if (GTimer_Get(DAC_GTIMER) >= 10000){  //1000ms
-//			DAC2_SetData(dac_out);
-//			GTimer_Reset(DAC_GTIMER);
-//		}
 	}
 }
 

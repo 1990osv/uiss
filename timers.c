@@ -5,6 +5,8 @@
 #define TIMER_RUNNING 1
 #define TIMER_PAUSED  2
 
+// Дискретность отсчета времени 0,1 мс
+
 volatile unsigned long GTimers[MAX_GTIMERS];
 volatile unsigned char GTState[MAX_GTIMERS];
 

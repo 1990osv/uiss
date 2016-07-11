@@ -8,9 +8,6 @@
 
 void HSE_80MHz_init (void)
 { // 80 MHz
-
-
-
 	RST_CLK_HSEconfig(RST_CLK_HSE_ON);
 	while(RST_CLK_HSEstatus()!=SUCCESS){
 	}/* ждем пока HSE выйдет в рабочий режим */
@@ -85,7 +82,7 @@ void Init_All_Ports(void)
 	PORTC_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
 	PORTC_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
 	PORTC_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
-	PORTC_InitStructure.PORT_OE	= PORT_OE_IN;		//направление - выход
+	PORTC_InitStructure.PORT_OE	= PORT_OE_IN;		//направление - вход
 	PORTC_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
 	PORTC_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
 	PORTC_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
@@ -136,7 +133,19 @@ void Init_All_Ports(void)
 	PORTF_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
 	PORTF_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
 	PORT_Init(MDR_PORTF, &PORTF_InitStructure);
-	
+
+	PORTF_InitStructure.PORT_Pin	= (MD0_PIN_F | MD1_PIN_F | MD2_PIN_F);
+	PORTF_InitStructure.PORT_FUNC  	= PORT_FUNC_PORT;	//порт
+	PORTF_InitStructure.PORT_GFEN	= PORT_GFEN_OFF;	//входной фильтр выкл
+	PORTF_InitStructure.PORT_MODE	= PORT_MODE_DIGITAL;	//цифровой режим работы
+	PORTF_InitStructure.PORT_OE	= PORT_OE_IN;		//направление - вход
+	PORTF_InitStructure.PORT_PD	= PORT_PD_DRIVER;	//управляемый драйвер
+	PORTF_InitStructure.PORT_PD_SHM = PORT_PD_SHM_OFF;	//триггер Шмитта выключен гистерезис 200 мВ;
+	PORTF_InitStructure.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
+	PORTF_InitStructure.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PORTF_InitStructure.PORT_SPEED = PORT_SPEED_MAXFAST;
+	PORT_Init(MDR_PORTF, &PORTF_InitStructure);
+  
 }
 
 void mDAC_Init(void)
@@ -170,7 +179,7 @@ void Tim1_Tim2_Init(void){
 	);
 
 	MDR_TIMER1->PSG = 0x0;
-	MDR_TIMER1->ARR = 999; //9999 -> 10 ms  999 -> ==100 us
+	MDR_TIMER1->ARR = 999; //999 == 100 us
 
 	MDR_TIMER1->IE = (1 << 1); //разрешение прерывания по совпадению
 	MDR_TIMER1->CNTRL = 1; /*счет вверх по TIM_CLK, таймер вкл.*/
@@ -183,32 +192,119 @@ void Tim1_Tim2_Init(void){
 
 }
 
+void init_PORTF4_as_input(void)
+{
+//	PORT_InitTypeDef PORT_InitStructure;
+//	
+//	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTF, ENABLE);
+//	PORT_InitStructure.PORT_Pin   = (PORT_Pin_4);
+//	PORT_InitStructure.PORT_OE    = PORT_OE_IN;
+//	PORT_InitStructure.PORT_FUNC  = PORT_FUNC_PORT;
+//	PORT_InitStructure.PORT_MODE  = PORT_MODE_DIGITAL;
+//	PORT_InitStructure.PORT_SPEED = PORT_SPEED_SLOW;
+//	PORT_InitStructure.PORT_PULL_UP = PORT_PULL_UP_ON;
+//	PORT_Init(MDR_PORTF, &PORT_InitStructure);
+}
+
+void Uart1_Default_Protocol_Init(void)
+{
+	static UART_InitTypeDef UART_InitStructure;
+	
+	UART_InitStructure.UART_BaudRate                = 9600;
+	UART_InitStructure.UART_WordLength              = UART_WordLength8b;
+	UART_InitStructure.UART_StopBits                = UART_StopBits1;
+	UART_InitStructure.UART_Parity                  = UART_Parity_No;
+	UART_InitStructure.UART_FIFOMode                = UART_FIFO_OFF;
+	UART_InitStructure.UART_HardwareFlowControl     = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
+	/* Configure UART1 parameters */
+	UART_Init (MDR_UART1,&UART_InitStructure);
+}
+
+unsigned int return_baud_rate(unsigned char n)
+{
+	unsigned int br[9] = {2400, 4800, 9600, 14400, 19200, 28800, 38400, 57600, 115200};
+	
+	if(n <= 8) 
+		return br[n];
+	else
+		return br[2]; //9600
+}
+
+unsigned int return_word_length(unsigned char n)
+{
+	unsigned int wl[4] = {UART_WordLength8b, UART_WordLength7b, UART_WordLength6b, UART_WordLength5b};
+
+	if(n <= 3) 
+		return wl[n];
+	else
+		return wl[0]; //UART_WordLength8b
+}
+
+unsigned int return_stop_bit(unsigned char n)
+{
+	if(n == 2) 
+		return UART_StopBits2;
+	else
+		return UART_StopBits1;
+}
+
+unsigned int return_parity(unsigned char n)
+{
+	unsigned int p[5] = {UART_Parity_No, UART_Parity_Even, UART_Parity_Odd, UART_Parity_1, UART_Parity_0};
+
+	if(n <= 4) 
+		return p[n];
+	else
+		return p[0]; //UART_Parity_No	
+
+}
+
+
+void Uart1_Protocol_Init(void)
+{
+	static UART_InitTypeDef UART_InitStructure;
+	
+	//init_PORTF4_as_input();
+	
+	if (PORT_ReadInputDataBit(MD0_PORT, MD0_PIN_F) == Bit_SET) {
+		UART_InitStructure.UART_BaudRate                = return_baud_rate(Par.baudRate);
+		UART_InitStructure.UART_WordLength              = return_word_length(Par.wordLength);
+		UART_InitStructure.UART_StopBits                = return_stop_bit(Par.stopBits);
+		UART_InitStructure.UART_Parity                  = return_parity(Par.parity);
+		UART_InitStructure.UART_FIFOMode                = UART_FIFO_OFF;
+		UART_InitStructure.UART_HardwareFlowControl     = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
+		/* Configure UART1 parameters */
+		UART_Init (MDR_UART1,&UART_InitStructure);
+	}
+	else {
+		Uart1_Default_Protocol_Init();
+	}
+}
 
 void Uart1_Init(void)
 {
 	static PORT_InitTypeDef PortInit;
-	static UART_InitTypeDef UART_InitStructure;
 
 	RST_CLK_PCLKcmd(RST_CLK_PCLK_PORTB,ENABLE);
 
 	/* Fill PortInit structure */
-	PortInit.PORT_PULL_UP = PORT_PULL_UP_OFF;
+	PortInit.PORT_PULL_UP 	= PORT_PULL_UP_OFF;
 	PortInit.PORT_PULL_DOWN = PORT_PULL_DOWN_OFF;
-	PortInit.PORT_PD_SHM = PORT_PD_SHM_OFF;
-	PortInit.PORT_PD = PORT_PD_DRIVER;
-	PortInit.PORT_GFEN = PORT_GFEN_OFF;
-	PortInit.PORT_FUNC = PORT_FUNC_ALTER;
-	PortInit.PORT_SPEED = PORT_SPEED_MAXFAST;
-	PortInit.PORT_MODE = PORT_MODE_DIGITAL;
+	PortInit.PORT_PD_SHM 	= PORT_PD_SHM_OFF;
+	PortInit.PORT_PD 	= PORT_PD_DRIVER;
+	PortInit.PORT_GFEN 	= PORT_GFEN_OFF;
+	PortInit.PORT_FUNC 	= PORT_FUNC_ALTER;
+	PortInit.PORT_SPEED 	= PORT_SPEED_MAXFAST;
+	PortInit.PORT_MODE 	= PORT_MODE_DIGITAL;
 
 	/* Configure PORTB pins 5 (UART1_TX) as output */
-	PortInit.PORT_OE = PORT_OE_OUT;
-	PortInit.PORT_Pin = PORT_Pin_5;
+	PortInit.PORT_OE 	= PORT_OE_OUT;
+	PortInit.PORT_Pin 	= PORT_Pin_5;
 	PORT_Init(MDR_PORTB, &PortInit);
 
 	/* Configure PORTB pins 6 (UART1_RX) as input */
-	PortInit.PORT_OE = PORT_OE_IN;
-	PortInit.PORT_Pin = PORT_Pin_6;
+	PortInit.PORT_OE 	= PORT_OE_IN;
+	PortInit.PORT_Pin 	= PORT_Pin_6;
 	PORT_Init(MDR_PORTB, &PortInit);
 
 	/* Enables the CPU_CLK clock on UART1 */
@@ -220,15 +316,8 @@ void Uart1_Init(void)
 	NVIC_SetPriority(UART1_IRQn,5);	
 	NVIC_EnableIRQ(UART1_IRQn);
 
-	UART_InitStructure.UART_BaudRate                = 9600;
-	UART_InitStructure.UART_WordLength              = UART_WordLength8b;
-	UART_InitStructure.UART_StopBits                = UART_StopBits1;
-	UART_InitStructure.UART_Parity                  = UART_Parity_No;
-	UART_InitStructure.UART_FIFOMode                = UART_FIFO_OFF;
-	UART_InitStructure.UART_HardwareFlowControl     = UART_HardwareFlowControl_RXE | UART_HardwareFlowControl_TXE;
-	/* Configure UART1 parameters */
-	UART_Init (MDR_UART1,&UART_InitStructure);
-
+	Uart1_Protocol_Init();
+	
 	/* Configure DMA for UART1 */
 	UART_DMAConfig (MDR_UART1, UART_IT_FIFO_LVL_12words, UART_IT_FIFO_LVL_12words);
 	UART_DMACmd(MDR_UART1, UART_DMA_TXE | UART_DMA_RXE | UART_DMA_ONERR, ENABLE);
@@ -241,5 +330,4 @@ void Uart1_Init(void)
 
 	/* Enables UART1 peripheral */
 	UART_Cmd(MDR_UART1,ENABLE);
-
 }

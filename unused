@@ -1,0 +1,146 @@
+;#<FEEDBACK># ARM Linker, 5060020: Last Updated: Mon Feb 01 15:17:07 2016
+;VERSION 0.2
+;FILE init.o
+__asm___6_init_c_CPU_init____REV16 <= USED 0
+__asm___6_init_c_CPU_init____REVSH <= USED 0
+;FILE main.o
+__asm___6_main_c_SEC____REV16 <= USED 0
+__asm___6_main_c_SEC____REVSH <= USED 0
+;FILE main_algorithm.o
+__asm___16_main_algorithm_c_2d5d25c8____REV16 <= USED 0
+__asm___16_main_algorithm_c_2d5d25c8____REVSH <= USED 0
+;FILE mdr32f9qx_eeprom.o
+EEPROM_EraseAllPages <= USED 0
+EEPROM_ProgramByte <= USED 0
+EEPROM_ProgramHalfWord <= USED 0
+EEPROM_ReadByte <= USED 0
+EEPROM_ReadHalfWord <= USED 0
+__asm___18_MDR32F9Qx_eeprom_c_aa8f9099____REV16 <= USED 0
+__asm___18_MDR32F9Qx_eeprom_c_aa8f9099____REVSH <= USED 0
+;FILE mdr32f9qx_it.o
+__asm___14_MDR32F9Qx_it_c_bb8ca80c____REV16 <= USED 0
+__asm___14_MDR32F9Qx_it_c_bb8ca80c____REVSH <= USED 0
+;FILE mdr32f9qx_port.o
+PORT_DeInit <= USED 0
+PORT_ReadInputData <= USED 0
+PORT_ReadInputDataBit <= USED 0
+PORT_ResetBits <= USED 0
+PORT_SetBits <= USED 0
+PORT_Write <= USED 0
+PORT_WriteBit <= USED 0
+__asm___16_MDR32F9Qx_port_c_a6c41966____REV16 <= USED 0
+__asm___16_MDR32F9Qx_port_c_a6c41966____REVSH <= USED 0
+;FILE mdr32f9qx_rst_clk.o
+RST_CLK_ADCclkEnable <= USED 0
+RST_CLK_ADCclkPrescaler <= USED 0
+RST_CLK_ADCclkSelection <= USED 0
+RST_CLK_CPU_PLLcmd <= USED 0
+RST_CLK_CPU_PLLconfig <= USED 0
+RST_CLK_CPU_PLLstatus <= USED 0
+RST_CLK_CPU_PLLuse <= USED 0
+RST_CLK_CPUclkPrescaler <= USED 0
+RST_CLK_CPUclkSelection <= USED 0
+RST_CLK_DeInit <= USED 0
+RST_CLK_HSEclkPrescaler <= USED 0
+RST_CLK_HSIadjust <= USED 0
+RST_CLK_HSIclkPrescaler <= USED 0
+RST_CLK_HSIcmd <= USED 0
+RST_CLK_HSIstatus <= USED 0
+RST_CLK_LSEconfig <= USED 0
+RST_CLK_LSEstatus <= USED 0
+RST_CLK_LSIadjust <= USED 0
+RST_CLK_LSIcmd <= USED 0
+RST_CLK_LSIstatus <= USED 0
+RST_CLK_RTC_HSEclkEnable <= USED 0
+RST_CLK_RTC_HSIclkEnable <= USED 0
+RST_CLK_USB_PLLcmd <= USED 0
+RST_CLK_USB_PLLconfig <= USED 0
+RST_CLK_USB_PLLstatus <= USED 0
+RST_CLK_USB_PLLuse <= USED 0
+RST_CLK_USBclkEnable <= USED 0
+RST_CLK_USBclkPrescaler <= USED 0
+RST_CLK_WarmDeInit <= USED 0
+__asm___19_MDR32F9Qx_rst_clk_c_19fd4a9d____REV16 <= USED 0
+__asm___19_MDR32F9Qx_rst_clk_c_19fd4a9d____REVSH <= USED 0
+;FILE mdr32f9qx_timer.o
+TIMER_BRGInit <= USED 0
+TIMER_BRKPolarityConfig <= USED 0
+TIMER_ChnBRKResetConfig <= USED 0
+TIMER_ChnCCR1_Cmd <= USED 0
+TIMER_ChnCCR1_EventSourceConfig <= USED 0
+TIMER_ChnCapturePrescalerConfig <= USED 0
+TIMER_ChnCompare1Config <= USED 0
+TIMER_ChnCompareConfig <= USED 0
+TIMER_ChnETRResetConfig <= USED 0
+TIMER_ChnETR_Cmd <= USED 0
+TIMER_ChnEventSourceConfig <= USED 0
+TIMER_ChnFilterConfig <= USED 0
+TIMER_ChnInit <= USED 0
+TIMER_ChnNOutConfig <= USED 0
+TIMER_ChnNOutModeConfig <= USED 0
+TIMER_ChnNOutPolarityConfig <= USED 0
+TIMER_ChnNOutSourceConfig <= USED 0
+TIMER_ChnOutConfig <= USED 0
+TIMER_ChnOutDTGConfig <= USED 0
+TIMER_ChnOutInit <= USED 0
+TIMER_ChnOutModeConfig <= USED 0
+TIMER_ChnOutPolarityConfig <= USED 0
+TIMER_ChnOutSourceConfig <= USED 0
+TIMER_ChnOutStructInit <= USED 0
+TIMER_ChnREFFormatConfig <= USED 0
+TIMER_ChnStructInit <= USED 0
+TIMER_ClearFlag <= USED 0
+TIMER_Cmd <= USED 0
+TIMER_CntAutoreloadConfig <= USED 0
+TIMER_CntEventSourceConfig <= USED 0
+TIMER_CntInit <= USED 0
+TIMER_CntStructInit <= USED 0
+TIMER_CounterModeConfig <= USED 0
+TIMER_DMACmd <= USED 0
+TIMER_DeInit <= USED 0
+TIMER_ETRFilterConfig <= USED 0
+TIMER_ETRInputConfig <= USED 0
+TIMER_ETRPolarityConfig <= USED 0
+TIMER_ETRPrescalerConfig <= USED 0
+TIMER_FilterSamplingConfig <= USED 0
+TIMER_GetChnCapture <= USED 0
+TIMER_GetChnCapture1 <= USED 0
+TIMER_GetChnWriteComplete <= USED 0
+TIMER_GetCntWriteComplete <= USED 0
+TIMER_GetCounter <= USED 0
+TIMER_GetCounterDirection <= USED 0
+TIMER_GetFlagStatus <= USED 0
+TIMER_GetITStatus <= USED 0
+TIMER_GetStatus <= USED 0
+TIMER_ITConfig <= USED 0
+TIMER_SetChnCompare <= USED 0
+TIMER_SetChnCompare1 <= USED 0
+TIMER_SetCntAutoreload <= USED 0
+TIMER_SetCntPrescaler <= USED 0
+TIMER_SetCounter <= USED 0
+TIMER_SetCounterDirection <= USED 0
+__asm___17_MDR32F9Qx_timer_c_566b03da____REV16 <= USED 0
+__asm___17_MDR32F9Qx_timer_c_566b03da____REVSH <= USED 0
+;FILE mdr32f9qx_uart.o
+UART_BreakLine <= USED 0
+UART_DeInit <= USED 0
+UART_GetFlagStatus <= USED 0
+UART_GetITStatus <= USED 0
+UART_IrDACmd <= USED 0
+UART_IrDAConfig <= USED 0
+UART_StructInit <= USED 0
+__asm___16_MDR32F9Qx_uart_c_c95a8597____REV16 <= USED 0
+__asm___16_MDR32F9Qx_uart_c_c95a8597____REVSH <= USED 0
+;FILE modbus.o
+GetStatus <= USED 0
+__asm___8_modbus_c_171d0f2a____REV16 <= USED 0
+__asm___8_modbus_c_171d0f2a____REVSH <= USED 0
+;FILE startup_mdr32f9qx.o
+;FILE system_mdr32f9qx.o
+__asm___18_system_MDR32F9Qx_c_5d646a67____REV16 <= USED 0
+__asm___18_system_MDR32F9Qx_c_5d646a67____REVSH <= USED 0
+;FILE timers.o
+GTimer_Pause <= USED 0
+GTimer_Release <= USED 0
+__asm___8_timers_c_c5ce0187____REV16 <= USED 0
+__asm___8_timers_c_c5ce0187____REVSH <= USED 0
